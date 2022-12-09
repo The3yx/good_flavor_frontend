@@ -7,7 +7,7 @@ import React, { Component } from "react";
 import { Form, Input, Button, Cascader, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { NavLink, Redirect } from "react-router-dom";
-import "./index.less";
+import styles from "./index.less";
 import { connect } from "react-redux";
 import axios from 'axios';
 import getCityArray from "../../utils/getCityUtils";
@@ -135,6 +135,7 @@ class Register extends Component {
     //const errorMsg = this.props.userData.errorMsg;
     return (
       <div>
+        <div className={styles.testt}>test</div>
         <div className="loginWrapper"></div>
         <div className="login">
           <header className="login-header">
