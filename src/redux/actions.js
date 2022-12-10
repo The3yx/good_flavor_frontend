@@ -28,7 +28,7 @@ export const logout = () => {
 export const login = (username, password) => async (dispatch) => {
   //执行异步请求
   axios.post(
-    '/login',
+    '/our/login',
     {
       username: username,
       password: password,

@@ -68,7 +68,6 @@ class Login extends Component {
             >
               <Form.Item
                 name="username"
-                initialValue="admin"
                 rules={[
                   {
                     required: true,
@@ -91,12 +90,11 @@ class Login extends Component {
                 <Input
                   prefix={<UserOutlined className="site-form-item-icon" />}
                   style={{ borderRadius: "5px" }}
-                  placeholder="用户名:wxy"
+                  placeholder="用户名"
                 />
               </Form.Item>
               <Form.Item
                 name="password"
-                initialValue="12345678"
                 rules={[
                   {
                     required: true,
@@ -110,7 +108,7 @@ class Login extends Component {
                 <Input
                   prefix={<LockOutlined className="site-form-item-icon" />}
                   type="password"
-                  placeholder="密码:helishou"
+                  placeholder="密码"
                   style={{ borderRadius: "5px" }}
                 />
               </Form.Item>
@@ -125,6 +123,9 @@ class Login extends Component {
                   登录
                 </Button>
               </Form.Item>
+              {/**
+               * //TODO:这里的注册需要改
+               */}
               <Form.Item>
                 <Button
                   type="primary"

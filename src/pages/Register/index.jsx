@@ -4,7 +4,7 @@
  */
 import React, { Component } from "react";
 //import logo from "../../assets/image/head.jpg";
-import { Form, Input, Button, Cascader, message } from "antd";
+import { Form, Input, Button, Cascader, Select, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { NavLink, Redirect } from "react-router-dom";
 import "./index.css";
@@ -12,6 +12,16 @@ import { connect } from "react-redux";
 import axios from 'axios';
 import getCityArray from "../../utils/getCityUtils";
 
+/**
+ * 注册要求:
+ * 1. 用户名:   无
+ * 2. 密码:     不少于6位,含有至少两个数字,不能都为大写或小写
+ * 3. 证件类型: 无
+ * 4. 证件号码: 无
+ * 5. 用户级别: 无
+ * 6. 用户简介: 无
+ * 7. 注册城市：无
+ */
 
 class Register extends Component {
   state = {
@@ -19,41 +29,20 @@ class Register extends Component {
     cityArray: []
   }
 
-  onFinish = async (values) => {
+  registerData = {
+
+  }
+
+  onFinish = (values) => {
     console.log('call onFinish')
-    const { username, password, confirmPassword } = values;
+    console.log(values)
+    const { username, password, confirmPassword,idType,place } = values;
+    //TODO:取值发送注册消息,设置isRegisterSuccess
     if (password !== confirmPassword) {
       return alert("密码不一致")
     }
 
-    axios.post(
-      '/register',
-      {
-        username: username,
-        password: password,
-      }
-    )
-      .then(
-        (res) => {
-          console.log(res)
-          const isRegisterSuccess = this.state.isRegisterSuccess
-          //注册成功的提示
-          this.setState({ isRegisterSuccess: !isRegisterSuccess })
-
-
-          return alert("注册成功")
-        },
-        (err) => {
-          console.log(err)
-
-          return alert("注册失败")
-        }
-      )
-      .catch(
-        (err) => {
-          console.log(err)
-        }
-      )
+    
   };
   onFinishFailed = (values, errorFields, outOfDate) => {
     values.errorFields.map((x) => {
@@ -61,22 +50,27 @@ class Register extends Component {
     });
   };
   validatePwd = (rule, value) => {
-    //TODO:密码要求:1length>=6; 2.digital个数>=2; 2.包含大小写
     if (!value) {
-      return Promise.reject("密码必须输入");
-    } else if (value.length < 8) {
-      return Promise.reject("密码不能小于8");
-    } else if (value.length > 12) {
-      return Promise.reject("密码不能大于12");
-    } else if (!/^[a-zA-Z0-9_]+$/.test(value)) {
-      return Promise.reject("密码必须由大小写字母或者数字组成");
+      return Promise.reject("请输入密码!");
+    } else if (value.length < 6) {
+      return Promise.reject("密码不能小于6");
+    } else if (!/^[0-9]+$/.test(value)) {
+      let count = 0
+      for(let c of value){
+        let numReg = /^[0-9]+.?[0-9]*/
+        if (numReg.test(c)){
+          count += 1
+        }
+      }
+      if(count<2)
+        return Promise.reject("密码必须含有两个数字");
     } else {
       return Promise.resolve(); //验证通过
     }
   };
 
   validateIdNumber = (rule, value) => {
-    //TODO:证件号码的格式暂时只设定为数字组成即可
+    //证件号码的格式设定为数字组成即可
     if (!value) {
       return Promise.reject("证件号码必须输入");
     } else if (!/^[0-9]+$/.test(value)) {
@@ -93,12 +87,11 @@ class Register extends Component {
       return Promise.reject("手机号格式不正确");
     } else if (value.length !== 11) {
       return Promise.reject("手机号格式不正确");
+    }else {
+      return Promise.resolve(); //验证通过
     }
   }
 
-  onChangePlace = () => {
-
-  }
 
   componentWillMount() {
     axios({
@@ -126,7 +119,7 @@ class Register extends Component {
 
   render() {
     const cityArray = this.state.cityArray
-    //如果用户已经登陆,自动跳转到登录页面
+    //用户注册成功,自动跳转到登录页面
     const { isRegisterSuccess } = this.state;
     if (isRegisterSuccess) {
       return <Redirect to="/login" />;
@@ -153,23 +146,10 @@ class Register extends Component {
             >
               <Form.Item
                 name="username"
-                initialValue="admin"
                 rules={[
                   {
                     required: true,
                     message: "请输入用户名!",
-                  },
-                  {
-                    min: 3,
-                    message: "最小5位",
-                  },
-                  {
-                    max: 15,
-                    message: "最大15位",
-                  },
-                  {
-                    pattern: /^[a-zA-Z0-9_]+$/,
-                    message: "必须是英文,数字或下划线组成",
                   },
                 ]}
               >
@@ -179,13 +159,10 @@ class Register extends Component {
                   placeholder="用户名"
                 />
               </Form.Item>
+
               <Form.Item
                 name="password"
                 rules={[
-                  {
-                    required: true,
-                    message: "请输入密码!",
-                  },
                   {
                     validator: this.validatePwd,
                   },
@@ -198,13 +175,10 @@ class Register extends Component {
                   style={{ borderRadius: "5px" }}
                 />
               </Form.Item>
+
               <Form.Item
                 name="confirmPassword"
                 rules={[
-                  {
-                    required: true,
-                    message: "请确认密码!",
-                  },
                   {
                     validator: this.validatePwd,
                   },
@@ -217,6 +191,7 @@ class Register extends Component {
                   style={{ borderRadius: "5px" }}
                 />
               </Form.Item>
+
               <Form.Item
                 name="name"
                 rules={[
@@ -232,8 +207,29 @@ class Register extends Component {
                   placeholder="姓名"
                 />
               </Form.Item>
-              {/*TODO:证件类型选择*/}
 
+              <Form.Item
+                name="idType">
+                <Select
+                  placeholder="证件类型"
+                  options={[
+                    {
+                      value:'0',
+                      label:'身份证'
+                    },
+                    {
+                      value:'1',
+                      label:'护照'
+                    },
+                    {
+                      value:'2',
+                      label:'港澳通行证'
+                    }
+                  ]}>
+
+                </Select>
+              </Form.Item>
+              
               <Form.Item
                 name="id_number"
                 rules={[
@@ -247,16 +243,14 @@ class Register extends Component {
                 ]}
               >
                 <Input
-                  prefix={<LockOutlined className="site-form-item-icon" />}
-                  type="password"
                   placeholder="证件号码"
                   style={{ borderRadius: "5px" }}
                 />
               </Form.Item>
+
               <Form.Item
                 name="place">
-                <Cascader options={cityArray} onChange={this.onChangePlace} placeholder="请选择您所在城市">
-
+                <Cascader options={cityArray}  placeholder="请选择您所在城市">
                 </Cascader>
               </Form.Item>
               <Form.Item
@@ -272,8 +266,6 @@ class Register extends Component {
                 ]}
               >
                 <Input
-                  prefix={<LockOutlined className="site-form-item-icon" />}
-                  type="password"
                   placeholder="手机号"
                   style={{ borderRadius: "5px" }}
                 />
@@ -305,8 +297,6 @@ class Register extends Component {
               </Form.Item>
               <Form.Item>
                 <Button
-                  type="primary"
-                  htmlType="submit"
                   className="login-form-button"
                   style={{ borderRadius: "5px" }}
                 >
