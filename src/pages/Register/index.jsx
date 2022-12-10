@@ -7,13 +7,12 @@ import React, { Component } from "react";
 import { Form, Input, Button, Cascader, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { NavLink, Redirect } from "react-router-dom";
-import styles from "./index.less";
+import "./index.css";
 import { connect } from "react-redux";
 import axios from 'axios';
 import getCityArray from "../../utils/getCityUtils";
 
 
-//TODO:所有的框都太长了
 class Register extends Component {
   state = {
     isRegisterSuccess: false,
@@ -97,7 +96,7 @@ class Register extends Component {
     }
   }
 
-  onChangePlace = () =>{
+  onChangePlace = () => {
 
   }
 
@@ -114,8 +113,8 @@ class Register extends Component {
       .then(
         (res) => {
           const cityArray = getCityArray(res.data.data)
-          this.setState({cityArray:cityArray})
-          
+          this.setState({ cityArray: cityArray })
+
         }
       )
       .catch(
@@ -135,14 +134,9 @@ class Register extends Component {
     //const errorMsg = this.props.userData.errorMsg;
     return (
       <div>
-        <div className={styles.testt}>test</div>
         <div className="loginWrapper"></div>
         <div className="login">
           <header className="login-header">
-            {/*<img src={logo} alt="logo" />*/}
-            {/** //TODO:好味道居中
-              *   //TODO:
-             */}
             <h1>好味道</h1>
           </header>
           <section className="login-content">
@@ -182,7 +176,7 @@ class Register extends Component {
                 <Input
                   prefix={<UserOutlined className="site-form-item-icon" />}
                   style={{ borderRadius: "5px" }}
-                  placeholder="用户名:wxy"
+                  placeholder="用户名"
                 />
               </Form.Item>
               <Form.Item
@@ -200,7 +194,7 @@ class Register extends Component {
                 <Input
                   prefix={<LockOutlined className="site-form-item-icon" />}
                   type="password"
-                  //placeholder="密码:helishou"
+                  placeholder="密码"
                   style={{ borderRadius: "5px" }}
                 />
               </Form.Item>
@@ -219,7 +213,7 @@ class Register extends Component {
                 <Input
                   prefix={<LockOutlined className="site-form-item-icon" />}
                   type="password"
-                  placeholder="密码:helishou"
+                  placeholder="确认密码"
                   style={{ borderRadius: "5px" }}
                 />
               </Form.Item>
@@ -235,7 +229,7 @@ class Register extends Component {
                 <Input
                   prefix={<UserOutlined className="site-form-item-icon" />}
                   style={{ borderRadius: "5px" }}
-                  placeholder="用户名:wxy"
+                  placeholder="姓名"
                 />
               </Form.Item>
               {/*TODO:证件类型选择*/}
@@ -255,15 +249,15 @@ class Register extends Component {
                 <Input
                   prefix={<LockOutlined className="site-form-item-icon" />}
                   type="password"
-                  placeholder="密码:helishou"
+                  placeholder="证件号码"
                   style={{ borderRadius: "5px" }}
                 />
               </Form.Item>
               <Form.Item
                 name="place">
-                  <Cascader options={cityArray} onChange={this.onChangePlace} placeholder="请选择您所在城市">
+                <Cascader options={cityArray} onChange={this.onChangePlace} placeholder="请选择您所在城市">
 
-                  </Cascader>
+                </Cascader>
               </Form.Item>
               <Form.Item
                 name="phone_number"
@@ -280,7 +274,7 @@ class Register extends Component {
                 <Input
                   prefix={<LockOutlined className="site-form-item-icon" />}
                   type="password"
-                  placeholder="密码:helishou"
+                  placeholder="手机号"
                   style={{ borderRadius: "5px" }}
                 />
               </Form.Item>
@@ -296,7 +290,7 @@ class Register extends Component {
                 <Input
                   prefix={<UserOutlined className="site-form-item-icon" />}
                   style={{ borderRadius: "5px" }}
-                  placeholder="用户名:wxy"
+                  placeholder="个人简介"
                 />
               </Form.Item>
               <Form.Item>
@@ -308,6 +302,8 @@ class Register extends Component {
                 >
                   确认
                 </Button>
+              </Form.Item>
+              <Form.Item>
                 <Button
                   type="primary"
                   htmlType="submit"
@@ -316,7 +312,6 @@ class Register extends Component {
                 >
                   取消
                 </Button>
-
               </Form.Item>
             </Form>
           </section>

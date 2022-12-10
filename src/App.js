@@ -19,7 +19,7 @@ class App extends React.Component {
             <Route path='/admin' component={Admin}></Route>
             <Route path='/login' component={Login}></Route>
             <Route path='/register' component={Register}></Route>
-            <Redirect to='/register'/>
+            <Redirect to='/login'/>
           </Switch>
         </Router>
       </div>
