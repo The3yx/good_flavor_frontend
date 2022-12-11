@@ -36,12 +36,12 @@ export const login = (username, password) => async (dispatch) => {
   )
   .then(
     (res) =>{
+      console.log(res)
       const userData = res.data
       storageUtils.saveUser(userData);
       dispatch(receiveUser(userData));
     },
     (err)=>{
-      console.log("err",err)
       dispatch(showErrorMsg(err));
       alert("用户名或密码错误!")
     }

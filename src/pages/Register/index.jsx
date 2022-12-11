@@ -11,7 +11,7 @@ import "./index.css";
 import { connect } from "react-redux";
 import axios from 'axios';
 import getCityArray from "../../utils/getCityUtils";
-
+const {TextArea} = Input
 /**
  * 注册要求:
  * 1. 用户名:   无
@@ -25,7 +25,7 @@ import getCityArray from "../../utils/getCityUtils";
 
 class Register extends Component {
   state = {
-    isRegisterSuccess: false,
+    redirectLogin: false,
     cityArray: []
   }
 
@@ -36,13 +36,46 @@ class Register extends Component {
   onFinish = (values) => {
     console.log('call onFinish')
     console.log(values)
-    const { username, password, confirmPassword,idType,place } = values;
+    const { username, password, confirmPassword,idType,idNumber,description, name, phoneNumber,place } = values;
     //TODO:取值发送注册消息,设置isRegisterSuccess
     if (password !== confirmPassword) {
       return alert("密码不一致")
     }
 
-    
+    //必须删除掉最后的Z字符,否则会400
+    //Note:密码不能有 .
+    var dateString = new Date().toISOString()
+    dateString = dateString.substring(0, dateString.length - 1);
+    axios({
+      url:'/our/register',
+      method:'post',
+      headers:{
+        'Content-Type': 'application/json'
+      },
+      data:{
+        "username":username,
+        "password":password,
+        "is_admin":false,
+        "name":name,
+        "id_number":idNumber,
+        "id_type":idType,
+        "is_vip":false,
+        "description":description,
+        "city":place[0]+place[1],
+        "reg_time":dateString,
+        "mod_time":dateString,
+        "phone_number":phoneNumber
+      }
+    })
+    .then(
+      (res) =>{
+        message.success('注册成功')
+        this.setState({redirectLogin:true})
+      }
+    )
+    .catch(
+      (err)=>console.log(err)
+    )
   };
   onFinishFailed = (values, errorFields, outOfDate) => {
     values.errorFields.map((x) => {
@@ -54,7 +87,7 @@ class Register extends Component {
       return Promise.reject("请输入密码!");
     } else if (value.length < 6) {
       return Promise.reject("密码不能小于6");
-    } else if (!/^[0-9]+$/.test(value)) {
+    } else {
       let count = 0
       for(let c of value){
         let numReg = /^[0-9]+.?[0-9]*/
@@ -64,7 +97,6 @@ class Register extends Component {
       }
       if(count<2)
         return Promise.reject("密码必须含有两个数字");
-    } else {
       return Promise.resolve(); //验证通过
     }
   };
@@ -120,8 +152,8 @@ class Register extends Component {
   render() {
     const cityArray = this.state.cityArray
     //用户注册成功,自动跳转到登录页面
-    const { isRegisterSuccess } = this.state;
-    if (isRegisterSuccess) {
+    const { redirectLogin } = this.state;
+    if (redirectLogin) {
       return <Redirect to="/login" />;
     }
     //const errorMsg = this.props.userData.errorMsg;
@@ -214,15 +246,15 @@ class Register extends Component {
                   placeholder="证件类型"
                   options={[
                     {
-                      value:'0',
+                      value:'身份证',
                       label:'身份证'
                     },
                     {
-                      value:'1',
+                      value:'护照',
                       label:'护照'
                     },
                     {
-                      value:'2',
+                      value:'港澳通行证',
                       label:'港澳通行证'
                     }
                   ]}>
@@ -231,12 +263,8 @@ class Register extends Component {
               </Form.Item>
               
               <Form.Item
-                name="id_number"
+                name="idNumber"
                 rules={[
-                  {
-                    required: true,
-                    message: "请输入证件号码",
-                  },
                   {
                     validator: this.validateIdNumber,
                   },
@@ -254,12 +282,8 @@ class Register extends Component {
                 </Cascader>
               </Form.Item>
               <Form.Item
-                name="phone_number"
+                name="phoneNumber"
                 rules={[
-                  {
-                    required: true,
-                    message: "请输入手机号",
-                  },
                   {
                     validator: this.validatePhoneNumber,
                   },
@@ -279,11 +303,13 @@ class Register extends Component {
                   },
                 ]}
               >
-                <Input
+                <TextArea
                   prefix={<UserOutlined className="site-form-item-icon" />}
                   style={{ borderRadius: "5px" }}
+                  rows={1}
                   placeholder="个人简介"
-                />
+                  maxLength={6}>
+                </TextArea>
               </Form.Item>
               <Form.Item>
                 <Button
@@ -299,6 +325,9 @@ class Register extends Component {
                 <Button
                   className="login-form-button"
                   style={{ borderRadius: "5px" }}
+                  onClick={()=>{
+                    this.setState({redirectLogin:true})
+                  }}
                 >
                   取消
                 </Button>

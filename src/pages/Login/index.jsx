@@ -26,22 +26,28 @@ class Login extends Component {
     });
   };
   validatePwd = (rule, value) => {
-
     if (!value) {
-      return Promise.reject("密码必须输入");
-    } else if (value.length < 8) {
-      return Promise.reject("密码不能小于8");
-    } else if (value.length > 12) {
-      return Promise.reject("密码不能大于12");
-    } else if (!/^[a-zA-Z0-9_]+$/.test(value)) {
-      return Promise.reject("密码必须由大小写字母或者数字组成");
+      return Promise.reject("请输入密码!");
+    } else if (value.length < 6) {
+      return Promise.reject("密码不能小于6");
     } else {
+      let count = 0
+      for(let c of value){
+        let numReg = /^[0-9]+.?[0-9]*/
+        if (numReg.test(c)){
+          count += 1
+        }
+      }
+      if(count<2)
+        return Promise.reject("密码必须含有两个数字");
       return Promise.resolve(); //验证通过
     }
   };
   render() {
     //have logined ==> <Admin/>
     const userData = this.props.userData;
+    const {history} = this.props
+
     if (userData.access_token) {
       return <Redirect to="/admin" />;
     }
@@ -73,18 +79,6 @@ class Login extends Component {
                     required: true,
                     message: "请输入用户名!",
                   },
-                  {
-                    min: 3,
-                    message: "最小5位",
-                  },
-                  {
-                    max: 15,
-                    message: "最大10位",
-                  },
-                  {
-                    pattern: /^[a-zA-Z0-9_]+$/,
-                    message: "必须是英文,数字或下划线组成",
-                  },
                 ]}
               >
                 <Input
@@ -96,10 +90,6 @@ class Login extends Component {
               <Form.Item
                 name="password"
                 rules={[
-                  {
-                    required: true,
-                    message: "请输入密码!",
-                  },
                   {
                     validator: this.validatePwd,
                   },
@@ -128,10 +118,11 @@ class Login extends Component {
                */}
               <Form.Item>
                 <Button
-                  type="primary"
-                  htmlType="submit"
                   className="login-form-button"
                   style={{ borderRadius: "5px" }}
+                  onClick={()=>{
+                    history.push('/register')
+                  }}
                 >
                   注册
                 </Button>

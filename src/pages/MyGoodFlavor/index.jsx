@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
 import { Button, Modal, Form, Input } from 'antd';
 import { Table, Tag, Space, DatePicker, Radio } from 'antd';
-import { UserOutlined } from "@ant-design/icons";
+import { UserOutlined, SearchOutlined } from "@ant-design/icons";
+import Highlighter from 'react-highlight-words';
 import axios from 'axios';
 import dayjs from 'dayjs';
 
@@ -9,24 +10,30 @@ const { Column, ColumnGroup } = Table;
 
 export default class MyGoodFlavor extends Component {
     state = {
-        GoodFlavorData: [
+        goodFlavorData: [
             //test data
+            //Note:数据属性比Table列属性多问题, 只要能覆盖就行,而且后续onRow中的record还能取出来所有数据
             {
-                key: '1',
-                firstName: 'John',
-                lastName: 'Brown',
-                age: 32,
-                address: 'New York No. 1 Lake Park',
-                tags: ['nice', 'developer'],
+                key:'1',
+                userid: 'test1',
+                theme:'theme1',
+                tags:['testtag1'],
+                test:'1'
             },
             {
-                key: '2',
-                firstName: 'Jim',
-                lastName: 'Green',
-                age: 42,
-                address: 'London No. 1 Lake Park',
-                tags: ['loser'],
+                key:'2',
+                userid: 'test2',
+                theme:'theme2',
+                tags:['testtag2'],
+                test:'1'
             },
+            {
+                key:'3',
+                userid: 'test3',
+                theme:'theme3',
+                tags:['testtag3'],
+                test:'1'
+            }
         ],
         open: false,
         modalState: {
@@ -35,15 +42,19 @@ export default class MyGoodFlavor extends Component {
             theme: '',
             description: '',
             maxprice: 1,
-            searchCreateTime: new Date().toISOString(),
-            searchChangeTime: new Date().toISOString(),
-            searchEndTime: new Date().toISOString(),
-            searchState: -1,
+            goodFlavorCreateTime: new Date().toISOString(),
+            goodFlavorChangeTime: new Date().toISOString(),
+            goodFlavorEndTime: new Date().toISOString(),
+            goodFlavorState: -1,
             picture: ''
-        }
+        },
+        searchedColumn:'',
+        searchText:'',
+
     }
 
     form = React.createRef()
+    searchInput =  React.createRef()
 
     addMyGoodFlavor = () => {
         const open = this.state.open
@@ -51,7 +62,7 @@ export default class MyGoodFlavor extends Component {
     }
 
     checkMyGoodFlavor = () => {
-
+        this.setState({ open: true })
     }
 
     handleOk = () => {
@@ -62,29 +73,118 @@ export default class MyGoodFlavor extends Component {
     handleCancel = () => {
         this.setState({ open: false })
     }
+
+
+    handleSearch = (selectedKeys, confirm, dataIndex) => {
+        confirm();
+        this.setState({searchText:selectedKeys[0], searchedColumn:dataIndex})
+    };
+    handleReset = (clearFilters, confirm) => {
+        clearFilters();
+        confirm()
+        this.setState({searchText:''})
+    };
+
+    getColumnSearchProps = (dataIndex) => ({
+        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+            <div
+                style={{
+                    padding: 8,
+                }}
+                onKeyDown={(e) => e.stopPropagation()}
+            >
+                <Input
+                    ref={this.searchInput}
+                    placeholder={`Search ${dataIndex}`}
+                    value={selectedKeys[0]}
+                    onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                    onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+                    style={{
+                        marginBottom: 8,
+                        display: 'block',
+                    }}
+                />
+                <Space>
+                    <Button
+                        type="primary"
+                        onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+                        icon={<SearchOutlined />}
+                        size="small"
+                        style={{
+                            width: 90,
+                        }}
+                    >
+                        确认
+                    </Button>
+                    <Button
+                        onClick={() => clearFilters && this.handleReset(clearFilters, confirm)}
+                        size="small"
+                        style={{
+                            width: 90,
+                        }}
+                    >
+                        重置
+                    </Button>
+                </Space>
+            </div>
+        ),
+        filterIcon: (filtered) => (
+            <SearchOutlined
+                style={{
+                    color: filtered ? '#1890ff' : undefined,
+                }}
+            />
+        ),
+        onFilter: (value, record) =>
+            record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+        onFilterDropdownOpenChange: (visible) => {
+            if (visible) {
+                setTimeout(() => this.searchInput.current?.select(), 100);
+            }
+        },
+        render: (text) =>
+            this.state.searchedColumn === dataIndex ? (
+                <Highlighter
+                    highlightStyle={{
+                        backgroundColor: '#ffc069',
+                        padding: 0,
+                    }}
+                    searchWords={[this.state.searchText]}
+                    autoEscape
+                    textToHighlight={text ? text.toString() : ''}
+                />
+            ) : (
+                text
+            ),
+    });
     render() {
         const open = this.state.open
-        const {
-            userid,
-            flavorType,
-            theme,
-            description,
-            maxprice,
-            searchCreateTime,
-            searchChangeTime,
-            searchEndTime,
-            searchState,
-            picture
-        } = this.state.modalState
-        console.log(searchCreateTime)
+        const modalState = this.state.modalState
+        const goodFlavorData = this.state.goodFlavorData
+        console.log(modalState.goodFlavorCreateTime)
         return (
             <>
                 <Button onClick={this.addMyGoodFlavor}>
                     添加我的寻味道
                 </Button>
-                <Table dataSource={this.state.MyGoodFlavor}>
-                    <Column title="发布用户" dataIndex="userid" key="userid" />
-                    <Column title="寻味道主题" dataIndex="theme" key="theme" />
+
+                {/** //TODO:Table还缺少行选择事件与筛选能力 */}
+                <Table dataSource={goodFlavorData}
+                        onRow={record => {
+                            return {
+                              onClick: event => {
+                                //TODO:按下面示例更新modelState
+                                modalState.userid = record.userid
+                                this.setState({modalState})
+                              }, // 点击行
+                              onDoubleClick: event => {},
+                              onContextMenu: event => {},
+                              onMouseEnter: event => {}, // 鼠标移入行
+                              onMouseLeave: event => {},
+                            };
+                          }}>
+                    <Column title="发布用户" dataIndex="userid" key="userid" {...this.getColumnSearchProps('userid')}/>
+                    <Column title="寻味道主题" dataIndex="theme" key="theme" {...this.getColumnSearchProps('theme')}/>
                     <Column
                         title="味道类型"
                         dataIndex="tags"
@@ -105,7 +205,7 @@ export default class MyGoodFlavor extends Component {
                         render={(_, record) => (
                             <Space size="middle">
                                 <a onClick={this.checkMyGoodFlavor}>查看</a>
-
+                                <a onClick={this.checkMyGoodFlavor}>删除</a>
                             </Space>
                         )}
                     />
@@ -116,9 +216,9 @@ export default class MyGoodFlavor extends Component {
                     open={open}
                     title="寻味道表单"
                     //TODO:okText不是写死的,-1表示还未创建过,没有searchState
-                    okText={searchState === -1 ?"创建":"修改"}
+                    okText={modalState.goodFlavorState === -1 ? "创建" : "修改"}
                     cancelText="取消"
-                    destroyOnClose
+                    destroyOnClose={true}
                     //TODO:onOk, onCancel
                     //Note:使用refs提取Form中的数据
                     onOk={this.handleOk}
@@ -129,9 +229,9 @@ export default class MyGoodFlavor extends Component {
                         preserve={false}
                         ref={this.form}>
                         <Form.Item label="用户id">
-                            <span> {userid} </span>
+                            <span> {modalState.userid} </span>
                         </Form.Item>
-                        <Form.Item name="flavorType" label="味道类型" initialValue={flavorType}>
+                        <Form.Item name="flavorType" label="味道类型" initialValue={modalState.flavorType}>
                             {/**
                          * //TODO:需要确认Radio的使用方法
                          */}
@@ -143,10 +243,10 @@ export default class MyGoodFlavor extends Component {
                                 <Radio value="e">绝一味</Radio>
                             </Radio.Group>
                         </Form.Item>
-                        <Form.Item label="请求主题" name="theme" initialValue={theme}>
+                        <Form.Item label="请求主题" name="theme" initialValue={modalState.theme}>
                             <Input placeholder='请求主题名称' />
                         </Form.Item>
-                        <Form.Item label="description" name="description" initialValue={description}>
+                        <Form.Item label="description" name="description" initialValue={modalState.description}>
                             <Input placeholder='请求描述'>
                             </Input>
                         </Form.Item>
@@ -157,15 +257,15 @@ export default class MyGoodFlavor extends Component {
                          * 接管子组件的value
                          * initialValue 不能被 setState 动态更新，你需要用 setFieldsValue 来更新。
                          */}
-                        <Form.Item label="请求创建日期" name="searchCreateTime" initialValue={dayjs(searchCreateTime)}>
+                        <Form.Item label="请求创建日期" name="searchCreateTime" initialValue={dayjs(modalState.goodFlavorCreateTime)}>
                             <DatePicker showTime >
                             </DatePicker>
                         </Form.Item>
-                        <Form.Item label="请求结束日期" name="searchChangeTime" initialValue={dayjs(searchChangeTime)}>
+                        <Form.Item label="请求结束日期" name="searchChangeTime" initialValue={dayjs(modalState.goodFlavorChangeTime)}>
                             <DatePicker showTime>
                             </DatePicker>
                         </Form.Item>
-                        <Form.Item label="请求结束日期" name="searchEndTime" initialValue={dayjs(searchEndTime)}>
+                        <Form.Item label="请求结束日期" name="searchEndTime" initialValue={dayjs(modalState.goodFlavorEndTime)}>
                             <DatePicker showTime>
                             </DatePicker>
                         </Form.Item>

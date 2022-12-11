@@ -21,11 +21,11 @@ class Admin extends Component {
   render() {
     //get the userdata in local storage
     const userData = this.props.userData
-    //TODO
+    console.log(userData)
     //userdata is {}, ==> <Login/>
-    // if (!userData.access_token) {
-    //   return <Redirect to='/login' />
-    // }
+    if (!userData.access_token) {
+      return <Redirect to='/login' />
+    }
 
     //userdata isn't {}, ==> <Admin/>
     return (
