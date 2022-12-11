@@ -9,18 +9,19 @@ const { TextArea } = Input
 class UserInfo extends Component {
   state = {
     infoChange: true,
-    open : false
+    open: false
   }
 
   form = React.createRef()  //UserInfo页面表单的ref
   modalForm = React.createRef()
 
-  handleOk = ()=>{
-
+  handleOk = () => {
+    console.log(this.modalForm.current.getFieldsValue())
+    this.setState({ open: false })
   }
 
-  handleCancel = ()=>{
-    
+  handleCancel = () => {
+    this.setState({ open: false })
   }
 
   render() {
@@ -29,7 +30,13 @@ class UserInfo extends Component {
     const { userData } = this.props
     return (
       <div className='userinfo-content'>
-        <Form ref={this.form}>
+        <Form
+          ref={this.form}
+          labelAlign="left"
+          labelCol={{ flex: '75px' }}
+          wrapperCol={
+            { flex: '1' }}>
+
           <Form.Item label="用户id">
             <span>
               {userData.id}
@@ -69,18 +76,18 @@ class UserInfo extends Component {
                 onClick={() => {
                   this.setState({ infoChange: false })
                 }}>
-                {infoChange === false ? '确认修改':'修改信息'}
+                {infoChange === false ? '确认修改' : '修改信息'}
               </Button>
-              <Button 
+              <Button
                 className='infoChangeCancel'
-                style={{display:infoChange === false?'inline':'none'}}
-                onClick={()=>{
+                style={{ display: infoChange === false ? 'inline' : 'none' }}
+                onClick={() => {
                   //TODO:取消修改时要把修改的Input框value改成defaultValue
                   this.form.current.setFieldsValue({
-                    'phone_number':userData.phone_number,
-                    'description':userData.description
+                    'phone_number': userData.phone_number,
+                    'description': userData.description
                   })
-                  this.setState({infoChange:true})
+                  this.setState({ infoChange: true })
                 }}>
                 取消修改
               </Button>
@@ -88,8 +95,8 @@ class UserInfo extends Component {
           </Form.Item>
           <Form.Item>
             <Button
-              onClick={()=>{
-                this.setState({open:true})
+              onClick={() => {
+                this.setState({ open: true })
               }}>
               修改密码
             </Button>
@@ -107,19 +114,29 @@ class UserInfo extends Component {
           open={open}>
           <Form
             preserve={false}
-            ref={this.modalForm}>
-              <Form.Item label="密码" name="oldPassword">
-                <Input placeholder='请输入旧密码'>
-                </Input>
-              </Form.Item>
-              <Form.Item label="新密码" name="newPassword">
-                <Input placeholder='请输入新密码'>
-                </Input>
-              </Form.Item>
-              <Form.Item label="密码" name="confirmNewPassword">
-                <Input placeholder='请再次输入新密码'>
-                </Input>
-              </Form.Item>
+            ref={this.modalForm}
+            labelAlign="left"
+            labelCol={{ flex: '75px' }}
+            wrapperCol={
+              { flex: '1' }}>
+            <Form.Item label="密码" name="oldPassword">
+              <Input
+                type='password'
+                placeholder='请输入旧密码'>
+              </Input>
+            </Form.Item>
+            <Form.Item label="新密码" name="newPassword">
+              <Input
+                type='password'
+                placeholder='请输入新密码'>
+              </Input>
+            </Form.Item>
+            <Form.Item label="密码" name="confirmNewPassword">
+              <Input
+                type='password'
+                placeholder='请再次输入新密码'>
+              </Input>
+            </Form.Item>
           </Form>
         </Modal>
       </div>
