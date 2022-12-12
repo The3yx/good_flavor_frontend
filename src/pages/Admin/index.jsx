@@ -12,11 +12,15 @@ import GoodFlavorHall from '../GoodFlavorHall';
 import AllUser from '../AllUser'
 import GoodFlavor from '../GoodFlavor'
 import Taste from '../Taste'
+import AllFlavor from '../AllFlavor';
+import AllTaste from '../AllTaste';
+import Benefits from '../Benefits';
 import './index.css'
 
 const { SubMenu } = Menu;
 const { Header, Content, Sider,Footer } = Layout;
 
+//TODO:缺少退出logout
 class Admin extends Component {
   render() {
     //get the userdata in local storage
@@ -64,11 +68,14 @@ class Admin extends Component {
                   <Menu.Item key="/mytaste"><Link to="/admin/mytaste">我的请品鉴</Link></Menu.Item>
                 </SubMenu>
                 <Menu.Item key="/goodflavorhall"><Link to="/admin/goodflavorhall">寻味道大厅</Link></Menu.Item>
-                <SubMenu key="sub2" icon={<NotificationOutlined />} title="个人主页" style={{ display: userData.is_admin == true ? 'block' : 'none' }}>
-                  <Menu.Item key="/alluser"><Link to="/admin/userinfo">用户信息</Link></Menu.Item>
-                  <Menu.Item key="/goodflavor"><Link to="/admin/mygoodflavor">寻味道</Link></Menu.Item>
-                  <Menu.Item key="/taste"><Link to="/admin/mytaste">请品鉴</Link></Menu.Item>
+                {/**style={{ display: userData.is_admin == true ? 'block' : 'none' }} */}
+                <SubMenu key="sub2" icon={<NotificationOutlined />} title="管理员选项">
+                  <Menu.Item key="/alluser"><Link to="/admin/alluser">用户信息</Link></Menu.Item>
+                  <Menu.Item key="/goodflavor"><Link to="/admin/allflavor">寻味道</Link></Menu.Item>
+                  <Menu.Item key="/taste"><Link to="/admin/alltaste">请品鉴</Link></Menu.Item>
+                  <Menu.Item key="/benefits"><Link to="/admin/benefits">利润报表</Link></Menu.Item>
                 </SubMenu>
+                
               </Menu>
             </div>
           </Sider>
@@ -82,8 +89,9 @@ class Admin extends Component {
                 <Route path="/admin/mytaste" component={MyTaste} />
                 <Route path="/admin/goodflavorhall" component={GoodFlavorHall} />
                 <Route path="/admin/alluser" component={AllUser}/>
-                <Route path="/admin/taste" component={Taste}/>
-                <Route path="/admin/goodflavor" component={GoodFlavor}/>
+                <Route path="/admin/alltaste" component={AllTaste}/>
+                <Route path="/admin/allflavor" component={AllFlavor}/>
+                <Route path="/admin/benefits" component={Benefits}/>
                 <Redirect to="/admin/userinfo" />
                 {/* exact={true} from="/admin"  */}
               </Switch>

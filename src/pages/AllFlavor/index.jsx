@@ -7,17 +7,16 @@ import Highlighter from 'react-highlight-words';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { getBase64 } from '../../utils/getBase64';
-import { base64ToFile } from '../../utils/base64ToFile';
+import { getAllUser } from '../../redux/actions';
+
 const { TextArea } = Input
 
 const { Column, ColumnGroup } = Table;
 
-class GoodFlavorHall extends Component {
+class AllFlavor extends Component {
     state = {
-        goodFlavorData: [
-        ],
+        goodFlavorData: [],
         open: false,
-        responseOpen: false,
         modalState: {
             id: 0,
             userid: 0,
@@ -36,7 +35,16 @@ class GoodFlavorHall extends Component {
         previewImage: '',
         previewOpen: false,
         PreviewTitle: '',
-        fileList: []
+        fileList: [],
+        userModalOpen:false,
+        userModalState: {
+            id:-1,
+            username:'',
+            name:'',
+            city:'',
+            phone_number:'',
+            description:''
+        },
 
     }
 
@@ -80,9 +88,7 @@ class GoodFlavorHall extends Component {
         this.setState({ open: true })
     }
 
-    responseTaste = () => {
-        this.setState({ responseOpen: true })
-    }
+    
 
     hadnleResponseOk = () => {
         const { id } = this.state.modalState
@@ -213,7 +219,9 @@ class GoodFlavorHall extends Component {
 
 
     componentWillMount = () => {
-        const { userData } = this.props
+        const { userData, getAllUser } = this.props
+        getAllUser()
+        //TODO:这里需要所有的search,后端还需要参数
         axios({
             url: '/our/data/search/query2',
             method: 'get',
@@ -240,7 +248,7 @@ class GoodFlavorHall extends Component {
             )
     }
     render() {
-        const { open, modalState, goodFlavorData, fileList, previewOpen, previewTitle, previewImage, responseOpen } = this.state
+        const { open, modalState, goodFlavorData, fileList, previewOpen, previewTitle, previewImage, userModalState,userModalOpen } = this.state
 
         return (
             <>
@@ -258,8 +266,9 @@ class GoodFlavorHall extends Component {
                                 modalState.goodFlavorChangeTime = record.mod_time
                                 modalState.picture = record.photo
                                 modalState.goodFlavorState = record.state
+                                userModalState.id = record.user_id
                                 this.setState({
-                                    modalState, fileList: [{
+                                    modalState, userModalState, fileList: [{
                                         uid: '-1',
                                         status: 'done',
                                         name: 'image.png',
@@ -296,8 +305,22 @@ class GoodFlavorHall extends Component {
                         key="action"
                         render={(_, record) => (
                             <Space size="middle">
-                                <a onClick={this.checkGoodFlavor}>查看</a>
-                                <a onClick={this.responseTaste}>响应</a>
+                                <a onClick={this.checkGoodFlavor}>查看请求</a>
+                                <a onClick={()=>{
+                                    const {allUserData} = this.props
+                                    for(let item of allUserData){
+                                        if(item.id === userModalState.id){
+                                            userModalState.username = item.username
+                                            userModalState.name = item.name
+                                            userModalState.city = item.city
+                                            userModalState.phone_number = item.phone_number
+                                            userModalState.description = item.description
+                                            this.setState({userModalState})
+                                            break
+                                        }
+                                    }
+                                    this.setState({userModalOpen:true})
+                                }}>查看用户</a>
                             </Space>
                         )}
                     />
@@ -387,31 +410,62 @@ class GoodFlavorHall extends Component {
                     />
                 </Modal>
 
-                {/**请品鉴对话框 */}
+                {/**用户信息对话框 */}
                 <Modal
-                    title="请品鉴表单"
+                    open={userModalOpen}
                     destroyOnClose={true}
-                    open={responseOpen}
                     okText="确认"
                     cancelText="取消"
-                    onOk={this.hadnleResponseOk}
-                    onCancel={this.hadnleResponseCancel}>
+                    onOk={() => {
+                        this.setState({ userModalOpen: false })
+                    }}
+                    onCancel={() => {
+                        this.setState({ userModalOpen: false })
+                    }}>
                     <Form
-                        ref={this.responseForm}
-                        preserve={false}>
-                        <Form.Item label="响应描述" name="response">
+                        disabled={true}
+                        labelAlign="left"
+                        labelCol={{ flex: '75px' }}
+                        wrapperCol={
+                            { flex: '1' }}>
+
+                        <Form.Item label="用户id">
+                            <span>
+                                {userModalState.id}
+                            </span>
+                        </Form.Item>
+                        <Form.Item label="用户名">
+                            <span>
+                                {userModalState.username}
+                            </span>
+                        </Form.Item>
+                        <Form.Item label="姓名">
+                            <span>
+                                {userModalState.name}
+                            </span>
+                        </Form.Item>
+                        <Form.Item label="注册城市">
+                            <span>
+                                {userModalState.city}
+                            </span>
+                        </Form.Item>
+                        <Form.Item label="手机号码" name="phone_number" initialValue={userModalState.phone_number}>
+                            <Input>
+                            </Input>
+                        </Form.Item>
+                        <Form.Item label="个人简介" name="description" initialValue={userModalState.description}>
                             <TextArea
-                                style={{ borderRadius: "5px" }}
                                 rows={3}
-                                placeholder="响应描述">
+                                placeholder="个人简介">
                             </TextArea>
                         </Form.Item>
-
                     </Form>
+
                 </Modal>
+
             </>
         )
     }
 }
 
-export default connect((state) => ({ userData: state.userData }), {})(GoodFlavorHall);
+export default connect((state) => ({ userData: state.userData, allUserData: state.allUserData }), { getAllUser })(AllFlavor);

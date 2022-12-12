@@ -6,9 +6,12 @@ import {
   RECEIVE_USER,
   SHOW_ERROR_MSG,
   RESET_USER,
+  RECEIVE_ALL_USER,
 } from './constant'
 
 export const receiveUser = (userData) => ({ type: RECEIVE_USER, userData });
+
+export const receiveAllUser = (allUserData) => ({type:RECEIVE_ALL_USER, allUserData})
 
 export const showErrorMsg = (errorMsg) => ({ type: SHOW_ERROR_MSG, errorMsg });
 
@@ -52,3 +55,24 @@ export const login = (username, password) => async (dispatch) => {
     }
   )
 };
+
+/**
+ * 获取所有用户 action
+ */
+export const getAllUser = () => (dispatch) =>{
+  axios.get(
+    '/our/admin/user'
+  )
+  .then(
+    (res)=>{
+      console.log('GETALLUSER',res)
+      const allUserData = res.data
+      dispatch(receiveAllUser(allUserData))
+    }
+  )
+  .catch(
+    (err)=>{
+      console.log(err)
+    }
+  )
+}

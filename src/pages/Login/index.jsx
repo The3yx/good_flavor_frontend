@@ -9,7 +9,7 @@ import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { NavLink, Redirect } from "react-router-dom";
 import "./index.css";
 import { connect } from "react-redux";
-import { login } from "../../redux/actions";
+import { login,getAllUser } from "../../redux/actions";
 
 class Login extends Component {
   onFinish = async (values) => {
@@ -18,6 +18,9 @@ class Login extends Component {
 
     //调用异步请求，
     this.props.login(username, password);
+
+    //TODO:需要判断管理员权限
+    this.props.getAllUser()
 
   };
   onFinishFailed = (values, errorFields, outOfDate) => {
@@ -134,4 +137,4 @@ class Login extends Component {
     );
   }
 }
-export default connect((state) => ({ userData: state.userData }), { login })(Login);
+export default connect((state) => ({ userData: state.userData }), { login,getAllUser })(Login);

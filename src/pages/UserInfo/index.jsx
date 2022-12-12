@@ -9,6 +9,7 @@ import axios from 'axios';
 import { receiveUser } from '../../redux/actions';
 
 const { TextArea } = Input
+//TODO:更新密码框时和更新手机号还需要验证格式
 class UserInfo extends Component {
   state = {
     infoChange: false,

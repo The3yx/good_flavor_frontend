@@ -97,7 +97,6 @@ class MyGoodFlavor extends Component {
     deleteMyGoodFlavor = () =>{
         //TODO:删除需要确认操作,可加可不加
         const {id} = this.state.modalState
-        console.log('deleteMyGoodFlavor',id)
         const {userData} = this.props
         axios({
             url:'/our/data/search/delete',
