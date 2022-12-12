@@ -1,43 +1,25 @@
 import React, { Component } from 'react'
-import { Button, Modal, Form, Input } from 'antd';
-import { Table, Tag, Space, DatePicker, Radio } from 'antd';
-import { UserOutlined, SearchOutlined } from "@ant-design/icons";
+import { connect } from "react-redux";
+import { Button, Modal, Form, Input, message } from 'antd';
+import { Table, Tag, Space, DatePicker, Radio, InputNumber, Image, Upload } from 'antd';
+import { UserOutlined, SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import Highlighter from 'react-highlight-words';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import { getBase64 } from '../../utils/getBase64';
+import { base64ToFile } from '../../utils/base64ToFile';
 
 const { Column, ColumnGroup } = Table;
 
-export default class MyGoodFlavor extends Component {
+//TODO:好味道创建表单中不应该有修改时间和创建时间选择框...
+class MyGoodFlavor extends Component {
     state = {
         goodFlavorData: [
-            //test data
-            //Note:数据属性比Table列属性多问题, 只要能覆盖就行,而且后续onRow中的record还能取出来所有数据
-            {
-                key:'1',
-                userid: 'test1',
-                theme:'theme1',
-                tags:['testtag1'],
-                test:'1'
-            },
-            {
-                key:'2',
-                userid: 'test2',
-                theme:'theme2',
-                tags:['testtag2'],
-                test:'1'
-            },
-            {
-                key:'3',
-                userid: 'test3',
-                theme:'theme3',
-                tags:['testtag3'],
-                test:'1'
-            }
         ],
         open: false,
         modalState: {
-            userid: '',
+            id:0,
+            userid: 0,
             flavorType: '',
             theme: '',
             description: '',
@@ -48,25 +30,213 @@ export default class MyGoodFlavor extends Component {
             goodFlavorState: -1,
             picture: ''
         },
-        searchedColumn:'',
-        searchText:'',
+        searchedColumn: '',
+        searchText: '',
+        previewImage: '',
+        previewOpen: false,
+        PreviewTitle: '',
+        fileList: []
 
     }
 
     form = React.createRef()
-    searchInput =  React.createRef()
+    searchInput = React.createRef()
+
+    uploadButton = (
+        <div>
+            <PlusOutlined />
+            <div
+                style={{
+                    marginTop: 8,
+                }}
+            >
+                添加图片
+            </div>
+        </div>
+    );
+
+    handlePreview = async (file) => {
+        if (!file.url && !file.preview) {
+            file.preview = await getBase64(file.originFileObj);
+        }
+        this.setState({
+            previewImage: file.url || file.preview,
+            previewOpen: true,
+            PreviewTitle: file.name || file.url.substring(file.url.lastIndexOf('/') + 1)
+        })
+
+    };
+
+    handleChange = ({ fileList: newFileList }) => this.setState({ fileList: newFileList });
+
+    beforeUpload = (file) => {
+        return false
+    }
 
     addMyGoodFlavor = () => {
+        const {modalState} = this.state
+        modalState.id = 0
+        modalState.userid = 0
+        modalState.flavorType= ''
+        modalState.theme=''
+        modalState.description= ''
+        modalState.maxprice=1
+        modalState.goodFlavorCreateTime=new Date().toISOString()
+        modalState.goodFlavorChangeTime=new Date().toISOString()
+        modalState.goodFlavorEndTime=new Date().toISOString()
+        modalState.goodFlavorState=-1
+        modalState.picture=''
         const open = this.state.open
-        this.setState({ open: true })
+
+        this.setState({ open: true, modalState })
     }
 
     checkMyGoodFlavor = () => {
         this.setState({ open: true })
     }
+    deleteMyGoodFlavor = () =>{
+        //TODO:删除需要确认操作,可加可不加
+        const {id} = this.state.modalState
+        console.log('deleteMyGoodFlavor',id)
+        const {userData} = this.props
+        axios({
+            url:'/our/data/search/delete',
+            method:'post',
+            params:{
+                id:id
+            }
+        })
+        .then(
+            (res)=>{
+                message.success("删除成功")
+                axios({
+                    url: '/our/data/search/query1',
+                    method: 'get',
+                    params: {
+                        user_id: userData.id
+                    }
+                })
+                    .then(
+                        (res => {
+                            const data = res.data
+                            console.log(data)
+                            this.setState({
+                                goodFlavorData:data.map((value,index)=>{
+                                    return {...value, key:value.id}
+                                })
+                            })
+        
+                        })
+                    )
+                    .catch(
+                        (err) => {
+                            console.log(err)
+                        }
+                    )
 
-    handleOk = () => {
-        console.log(this.form.current.getFieldsValue())
+            }
+        )
+        .catch(
+            (err)=>{
+                message.error("删除失败")
+            }
+        )
+    }
+
+    handleOk = async () => {
+        const { flavorType, description, maxprice, picture, searchChangeTime, searchCreateTime, searchEndTime, theme } = this.form.current.getFieldsValue()
+        const {id, goodFlavorState} = this.state.modalState
+        const { userData } = this.props
+        const createTime = searchCreateTime.format('YYYY-MM-DDTHH:mm:ss')
+        const modifyTime = searchChangeTime.format('YYYY-MM-DDTHH:mm:ss')
+        const endTime = searchEndTime.format('YYYY-MM-DD')
+        var pictureString = this.state.modalState.picture
+        if(picture)
+            pictureString = await getBase64(picture.file)
+
+        console.log(pictureString)
+        if(goodFlavorState === -1){
+            axios({
+                url: '/our/data/search/add',
+                method: 'post',
+                data: {
+                    user_id: userData.id,
+                    flavor_type: flavorType,
+                    req_name: theme,
+                    req_description: description,
+                    price: maxprice,
+                    end_time: endTime,
+                    photo: pictureString,
+                    crea_time: createTime,
+                    mod_time: modifyTime,
+                    state: 0
+                }
+            })
+                .then(
+                    (res) => {
+                        message.success("创建请求成功")
+                    }
+                )
+                .catch(
+                    (err) => {
+                        message.success("创建请求失败")
+                    }
+                )
+        }else{
+            axios({
+                url:'/our/data/search/change',
+                method:'post',
+                data:{
+                    id:id,
+                    user_id: userData.id,
+                    flavor_type: flavorType,
+                    req_name: theme,
+                    req_description: description,
+                    price: maxprice,
+                    end_time: endTime,
+                    photo: pictureString,
+                    crea_time: createTime,
+                    mod_time: modifyTime,
+                    state: goodFlavorState
+                }
+            })
+            .then(
+                (res)=>{
+                    message.success("修改成功")
+                    axios({
+                        url: '/our/data/search/query1',
+                        method: 'get',
+                        params: {
+                            user_id: userData.id
+                        }
+                    })
+                        .then(
+                            (res => {
+                                const data = res.data
+                                console.log(data)
+                                this.setState({
+                                    goodFlavorData:data.map((value,index)=>{
+                                        return {...value, key:value.id}
+                                    })
+                                })
+            
+                            })
+                        )
+                        .catch(
+                            (err) => {
+                                console.log(err)
+                            }
+                        )
+                }
+            )
+            .catch(
+                (err)=>{
+                    message.error("修改失败")
+                }
+            )
+        
+        }
+        
         this.setState({ open: false })
     }
 
@@ -77,12 +247,12 @@ export default class MyGoodFlavor extends Component {
 
     handleSearch = (selectedKeys, confirm, dataIndex) => {
         confirm();
-        this.setState({searchText:selectedKeys[0], searchedColumn:dataIndex})
+        this.setState({ searchText: selectedKeys[0], searchedColumn: dataIndex })
     };
     handleReset = (clearFilters, confirm) => {
         clearFilters();
         confirm()
-        this.setState({searchText:''})
+        this.setState({ searchText: '' })
     };
 
     getColumnSearchProps = (dataIndex) => ({
@@ -157,45 +327,86 @@ export default class MyGoodFlavor extends Component {
                 text
             ),
     });
+
+    componentWillMount = () => {
+        const { userData } = this.props
+        axios({
+            url: '/our/data/search/query1',
+            method: 'get',
+            params: {
+                user_id: userData.id
+            }
+        })
+            .then(
+                (res => {
+                    const data = res.data
+                    console.log(data)
+                    this.setState({
+                        goodFlavorData:data.map((value,index)=>{
+                            return {...value, key:value.id}
+                        })
+                    })
+
+                })
+            )
+            .catch(
+                (err) => {
+                    console.log(err)
+                }
+            )
+    }
     render() {
-        const open = this.state.open
-        const modalState = this.state.modalState
-        const goodFlavorData = this.state.goodFlavorData
-        console.log(modalState.goodFlavorCreateTime)
+        const { open, modalState, goodFlavorData, fileList, previewOpen, previewTitle, previewImage } = this.state
+
         return (
             <>
                 <Button onClick={this.addMyGoodFlavor}>
                     添加我的寻味道
                 </Button>
 
-                {/** //TODO:Table还缺少行选择事件与筛选能力 */}
+
                 <Table dataSource={goodFlavorData}
-                        onRow={record => {
-                            return {
-                              onClick: event => {
-                                //TODO:按下面示例更新modelState
-                                modalState.userid = record.userid
+                    onRow={record => {
+                        return {
+                            onClick: event => {
+                                modalState.userid = record.user_id
+                                modalState.description = record.req_description
+                                modalState.flavorType = record.flavor_type
+                                modalState.goodFlavorEndTime = record.end_time
+                                modalState.maxprice = record.price
+                                modalState.theme = record.req_name
+                                modalState.goodFlavorCreateTime = record.crea_time
+                                modalState.goodFlavorChangeTime = record.mod_time
+                                modalState.picture = record.photo
+                                modalState.goodFlavorState = record.state
+                                this.setState({ modalState,fileList:[{
+                                    uid:'-1',
+                                    status:'done',
+                                    name:'image.png',
+                                    url:record.photo
+                                }] })
+                            }, // 点击行
+                            onDoubleClick: event => { },
+                            onContextMenu: event => { },
+                            onMouseEnter: event => {
+                                modalState.id = record.id
                                 this.setState({modalState})
-                              }, // 点击行
-                              onDoubleClick: event => {},
-                              onContextMenu: event => {},
-                              onMouseEnter: event => {}, // 鼠标移入行
-                              onMouseLeave: event => {},
-                            };
-                          }}>
-                    <Column title="发布用户" dataIndex="userid" key="userid" {...this.getColumnSearchProps('userid')}/>
-                    <Column title="寻味道主题" dataIndex="theme" key="theme" {...this.getColumnSearchProps('theme')}/>
+                            }, // 鼠标移入行
+                            onMouseLeave: event => { },
+                        };
+                    }}>
+                    {/** //TODO:增加一列请求状态 */}
+                    <Column title="寻味道标识" dataIndex="id" key="id" {...this.getColumnSearchProps('id')} />
+                    <Column title="寻味道主题" dataIndex="req_name" key="req_name" {...this.getColumnSearchProps('req_name')} />
                     <Column
                         title="味道类型"
-                        dataIndex="tags"
-                        key="tags"
-                        render={(tags) => (
+                        dataIndex="flavor_type"
+                        key="flavor_type"
+                        render={(tag) => (
                             <>
-                                {tags.map((tag) => (
-                                    <Tag color="blue" key={tag}>
-                                        {tag}
-                                    </Tag>
-                                ))}
+                                <Tag color="blue" key={tag}>
+                                    {tag}
+                                </Tag>
                             </>
                         )}
                     />
@@ -205,7 +416,7 @@ export default class MyGoodFlavor extends Component {
                         render={(_, record) => (
                             <Space size="middle">
                                 <a onClick={this.checkMyGoodFlavor}>查看</a>
-                                <a onClick={this.checkMyGoodFlavor}>删除</a>
+                                <a onClick={this.deleteMyGoodFlavor}>删除</a>
                             </Space>
                         )}
                     />
@@ -215,11 +426,9 @@ export default class MyGoodFlavor extends Component {
                 <Modal
                     open={open}
                     title="寻味道表单"
-                    //TODO:okText不是写死的,-1表示还未创建过,没有searchState
                     okText={modalState.goodFlavorState === -1 ? "创建" : "修改"}
                     cancelText="取消"
                     destroyOnClose={true}
-                    //TODO:onOk, onCancel
                     //Note:使用refs提取Form中的数据
                     onOk={this.handleOk}
                     onCancel={this.handleCancel}
@@ -228,30 +437,42 @@ export default class MyGoodFlavor extends Component {
                     <Form
                         preserve={false}
                         ref={this.form}>
-                        <Form.Item label="用户id">
-                            <span> {modalState.userid} </span>
-                        </Form.Item>
                         <Form.Item name="flavorType" label="味道类型" initialValue={modalState.flavorType}>
                             {/**
                          * //TODO:需要确认Radio的使用方法
                          */}
                             <Radio.Group>
-                                <Radio value="a">家乡小吃</Radio>
-                                <Radio value="b">地方特色小馆</Radio>
-                                <Radio value="c">香辣味</Radio>
-                                <Radio value="d">甜酸味</Radio>
-                                <Radio value="e">绝一味</Radio>
+                                <Radio value="嘉兴小吃">家乡小吃</Radio>
+                                <Radio value="地方特色小馆">地方特色小馆</Radio>
+                                <Radio value="香辣味">香辣味</Radio>
+                                <Radio value="甜酸味">甜酸味</Radio>
+                                <Radio value="绝一味">绝一味</Radio>
                             </Radio.Group>
                         </Form.Item>
                         <Form.Item label="请求主题" name="theme" initialValue={modalState.theme}>
                             <Input placeholder='请求主题名称' />
                         </Form.Item>
-                        <Form.Item label="description" name="description" initialValue={modalState.description}>
+                        <Form.Item label="请求描述" name="description" initialValue={modalState.description}>
                             <Input placeholder='请求描述'>
                             </Input>
                         </Form.Item>
-                        {/** //TODO:最高单价 */}
 
+                        <Form.Item name="picture" label="图片">
+                            {/**Upload中的图片的default有点问题 */}
+                            <Upload
+                                accept='.png,.jpg'
+                                listType='picture-card'
+                                fileList={fileList}
+                                onPreview={this.handlePreview}
+                                onChange={this.handleChange}
+                                beforeUpload={this.beforeUpload}>
+
+                                {fileList.length >= 1 ? null : this.uploadButton}
+                            </Upload>
+                        </Form.Item>
+                        <Form.Item label="最高单价" name="maxprice" initialValue={modalState.maxprice}>
+                            <InputNumber addonBefore="+" addonAfter="￥" placeholder='最高单价' />
+                        </Form.Item>
 
                         {/**Note:想要initialValue有效, name属性必须有, 因为name属性有了后, Form.Item才能
                          * 接管子组件的value
@@ -266,12 +487,25 @@ export default class MyGoodFlavor extends Component {
                             </DatePicker>
                         </Form.Item>
                         <Form.Item label="请求结束日期" name="searchEndTime" initialValue={dayjs(modalState.goodFlavorEndTime)}>
-                            <DatePicker showTime>
+                            <DatePicker>
                             </DatePicker>
                         </Form.Item>
                     </Form>
+                </Modal>
+
+                {/**预览图片的Modal */}
+                <Modal open={previewOpen} title={previewTitle} footer={null} onCancel={() => { this.setState({ previewOpen: false }) }}>
+                    <img
+                        alt="example"
+                        style={{
+                            width: '100%',
+                        }}
+                        src={previewImage}
+                    />
                 </Modal>
             </>
         )
     }
 }
+
+export default connect((state) => ({ userData: state.userData }), {})(MyGoodFlavor);

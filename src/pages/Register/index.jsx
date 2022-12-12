@@ -29,15 +29,11 @@ class Register extends Component {
     cityArray: []
   }
 
-  registerData = {
-
-  }
 
   onFinish = (values) => {
     console.log('call onFinish')
     console.log(values)
     const { username, password, confirmPassword,idType,idNumber,description, name, phoneNumber,place } = values;
-    //TODO:取值发送注册消息,设置isRegisterSuccess
     if (password !== confirmPassword) {
       return alert("密码不一致")
     }
@@ -307,8 +303,7 @@ class Register extends Component {
                   prefix={<UserOutlined className="site-form-item-icon" />}
                   style={{ borderRadius: "5px" }}
                   rows={1}
-                  placeholder="个人简介"
-                  maxLength={6}>
+                  placeholder="个人简介">
                 </TextArea>
               </Form.Item>
               <Form.Item>
