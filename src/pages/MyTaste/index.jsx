@@ -11,7 +11,7 @@ const {TextArea}  = Input
 
 const { Column, ColumnGroup } = Table;
 
-//TODO:响应状态数字到状态的对应关系
+
 class MyTaste extends Component {
   state = {
     tasteData: [],
@@ -221,7 +221,7 @@ class MyTaste extends Component {
               onMouseLeave: event => { },
             };
           }}>
-          {/** //TODO:增加一列请求状态 */}
+
           <Column title="请品鉴标识" dataIndex="id" key="id" {...this.getColumnSearchProps('id')} />
           <Column title="请品鉴描述" dataIndex="description" key="description" {...this.getColumnSearchProps('description')} />
           <Column title="请品鉴状态" dataIndex="state" key="state" 

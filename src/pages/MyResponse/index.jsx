@@ -81,7 +81,6 @@ class MyResponse extends Component {
       console.log(err)
     })
 
-    //TODO更新寻味道成功表
     var dateString = dayjs().format("YYYY-MM-DD")
     axios({
       url:'/our/data/success_add',
@@ -329,8 +328,6 @@ class MyResponse extends Component {
                 >
                   <a style={{display:record.state == 0?"inline":"none"}} href="#">拒绝</a>
                 </Popconfirm>
-                {/* <a onClick={this.receiveResponse}>接收</a>
-                <a onClick={this.refuseResponse}>拒接</a> */}
               </Space>
               )
             }}

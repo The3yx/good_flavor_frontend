@@ -276,7 +276,7 @@ class GoodFlavorHall extends Component {
                             onMouseLeave: event => { },
                         };
                     }}>
-                    {/** //TODO:增加一列请求状态 */}
+
                     <Column title="用户标识" dataIndex="user_id" key="user_id" {...this.getColumnSearchProps('user_id')} />
                     <Column title="寻味道主题" dataIndex="req_name" key="req_name" {...this.getColumnSearchProps('req_name')} />
                     <Column title="寻味道状态" dataIndex="state" key="state" 

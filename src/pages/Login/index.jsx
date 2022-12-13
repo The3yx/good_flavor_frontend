@@ -9,7 +9,7 @@ import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { NavLink, Redirect } from "react-router-dom";
 import "./index.css";
 import { connect } from "react-redux";
-import { login,getAllUser } from "../../redux/actions";
+import { login, getAllUser } from "../../redux/actions";
 
 class Login extends Component {
   onFinish = async (values) => {
@@ -29,29 +29,18 @@ class Login extends Component {
     });
   };
 
-  //TODO:登录时的格式验证没必要,只要有值就行
   validatePwd = (rule, value) => {
     if (!value) {
-      return Promise.reject("请输入密码!");
-    } else if (value.length < 6) {
-      return Promise.reject("密码不能小于6");
+      return Promise.reject("请输入密码");
     } else {
-      let count = 0
-      for(let c of value){
-        let numReg = /^[0-9]+.?[0-9]*/
-        if (numReg.test(c)){
-          count += 1
-        }
-      }
-      if(count<2)
-        return Promise.reject("密码必须含有两个数字");
       return Promise.resolve(); //验证通过
     }
   };
+
   render() {
     //have logined ==> <Admin/>
     const userData = this.props.userData;
-    const {history} = this.props
+    const { history } = this.props
 
     if (userData.access_token) {
       return <Redirect to="/admin" />;
@@ -125,7 +114,7 @@ class Login extends Component {
                 <Button
                   className="login-form-button"
                   style={{ borderRadius: "5px" }}
-                  onClick={()=>{
+                  onClick={() => {
                     history.push('/register')
                   }}
                 >
@@ -139,4 +128,4 @@ class Login extends Component {
     );
   }
 }
-export default connect((state) => ({ userData: state.userData }), { login,getAllUser })(Login);
+export default connect((state) => ({ userData: state.userData }), { login, getAllUser })(Login);
