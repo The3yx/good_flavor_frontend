@@ -205,6 +205,29 @@ class AllTaste extends Component {
                     {/** //TODO:增加一列请求状态 */}
                     <Column title="请品鉴标识" dataIndex="id" key="id" {...this.getColumnSearchProps('id')} />
                     <Column title="请品鉴描述" dataIndex="description" key="description" {...this.getColumnSearchProps('description')} />
+                    <Column title="请品鉴状态" dataIndex="state" key="state" 
+                        render={(state)=>{
+                            var stateString = ''
+                            switch(state){
+                                case 0: 
+                                    stateString = '待接受'
+                                    break
+                                case 1: 
+                                    stateString = '同意'
+                                    break
+                                case 2: 
+                                    stateString = '拒绝'
+                                    break
+                                default:
+                                    stateString = "error"
+                            }
+                            return(<>
+                                <Tag color="blue" key={stateString}>
+                                    {stateString}
+                                </Tag>
+                            </>)
+                            
+                        }}/>
                     <Column
                         title="响应状态"
                         dataIndex="state"

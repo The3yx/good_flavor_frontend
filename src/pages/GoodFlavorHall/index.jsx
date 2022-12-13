@@ -279,6 +279,29 @@ class GoodFlavorHall extends Component {
                     {/** //TODO:增加一列请求状态 */}
                     <Column title="用户标识" dataIndex="user_id" key="user_id" {...this.getColumnSearchProps('user_id')} />
                     <Column title="寻味道主题" dataIndex="req_name" key="req_name" {...this.getColumnSearchProps('req_name')} />
+                    <Column title="寻味道状态" dataIndex="state" key="state" 
+                        render={(state)=>{
+                            var stateString = ''
+                            switch(state){
+                                case 0: 
+                                    stateString = '待响应'
+                                    break
+                                case 1: 
+                                    stateString = '已完成'
+                                    break
+                                case 2: 
+                                    stateString = '到期未达成'
+                                    break
+                                default:
+                                    stateString = "error"
+                            }
+                            return(<>
+                                <Tag color="blue" key={stateString}>
+                                    {stateString}
+                                </Tag>
+                            </>)
+                            
+                        }}/>
                     <Column
                         title="味道类型"
                         dataIndex="flavor_type"
@@ -320,9 +343,6 @@ class GoodFlavorHall extends Component {
                         preserve={false}
                         ref={this.form}>
                         <Form.Item name="flavorType" label="味道类型" initialValue={modalState.flavorType}>
-                            {/**
-                         * //TODO:需要确认Radio的使用方法
-                         */}
                             <Radio.Group>
                                 <Radio value="嘉兴小吃">家乡小吃</Radio>
                                 <Radio value="地方特色小馆">地方特色小馆</Radio>

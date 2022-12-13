@@ -95,7 +95,6 @@ class MyGoodFlavor extends Component {
         this.setState({ open: true })
     }
     deleteMyGoodFlavor = () =>{
-        //TODO:删除需要确认操作,可加可不加
         const {id} = this.state.modalState
         const {userData} = this.props
         axios({
@@ -174,6 +173,7 @@ class MyGoodFlavor extends Component {
                 .then(
                     (res) => {
                         message.success("创建请求成功")
+                        this.updateTable()
                     }
                 )
                 .catch(
@@ -202,30 +202,7 @@ class MyGoodFlavor extends Component {
             .then(
                 (res)=>{
                     message.success("修改成功")
-                    axios({
-                        url: '/our/data/search/query1',
-                        method: 'get',
-                        params: {
-                            user_id: userData.id
-                        }
-                    })
-                        .then(
-                            (res => {
-                                const data = res.data
-                                console.log(data)
-                                this.setState({
-                                    goodFlavorData:data.map((value,index)=>{
-                                        return {...value, key:value.id}
-                                    })
-                                })
-            
-                            })
-                        )
-                        .catch(
-                            (err) => {
-                                console.log(err)
-                            }
-                        )
+                    this.updateTable()
                 }
             )
             .catch(
@@ -328,6 +305,10 @@ class MyGoodFlavor extends Component {
     });
 
     componentWillMount = () => {
+        this.updateTable()
+    }
+
+    updateTable = ()=>{
         const { userData } = this.props
         axios({
             url: '/our/data/search/query1',
@@ -397,6 +378,29 @@ class MyGoodFlavor extends Component {
                     {/** //TODO:增加一列请求状态 */}
                     <Column title="寻味道标识" dataIndex="id" key="id" {...this.getColumnSearchProps('id')} />
                     <Column title="寻味道主题" dataIndex="req_name" key="req_name" {...this.getColumnSearchProps('req_name')} />
+                    <Column title="寻味道状态" dataIndex="state" key="state" 
+                        render={(state)=>{
+                            var stateString = ''
+                            switch(state){
+                                case 0: 
+                                    stateString = '待响应'
+                                    break
+                                case 1: 
+                                    stateString = '已完成'
+                                    break
+                                case 2: 
+                                    stateString = '到期未达成'
+                                    break
+                                default:
+                                    stateString = "error"
+                            }
+                            return(<>
+                                <Tag color="blue" key={stateString}>
+                                    {stateString}
+                                </Tag>
+                            </>)
+                            
+                        }}/>
                     <Column
                         title="味道类型"
                         dataIndex="flavor_type"
@@ -437,11 +441,8 @@ class MyGoodFlavor extends Component {
                         preserve={false}
                         ref={this.form}>
                         <Form.Item name="flavorType" label="味道类型" initialValue={modalState.flavorType}>
-                            {/**
-                         * //TODO:需要确认Radio的使用方法
-                         */}
                             <Radio.Group>
-                                <Radio value="嘉兴小吃">家乡小吃</Radio>
+                                <Radio value="家乡小吃">家乡小吃</Radio>
                                 <Radio value="地方特色小馆">地方特色小馆</Radio>
                                 <Radio value="香辣味">香辣味</Radio>
                                 <Radio value="甜酸味">甜酸味</Radio>

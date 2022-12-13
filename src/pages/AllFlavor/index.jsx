@@ -1,13 +1,14 @@
 import React, { Component } from 'react'
 import { connect } from "react-redux";
 import { Button, Modal, Form, Input, message } from 'antd';
-import { Table, Tag, Space, DatePicker, Radio, InputNumber, Image, Upload } from 'antd';
+import { Table, Tag, Space, DatePicker, Radio, InputNumber, Image, Upload,Cascader } from 'antd';
 import { UserOutlined, SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import Highlighter from 'react-highlight-words';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { getBase64 } from '../../utils/getBase64';
 import { getAllUser } from '../../redux/actions';
+import getCityArray from "../../utils/getCityUtils";
 
 const { TextArea } = Input
 
@@ -36,20 +37,20 @@ class AllFlavor extends Component {
         previewOpen: false,
         PreviewTitle: '',
         fileList: [],
-        userModalOpen:false,
+        userModalOpen: false,
         userModalState: {
-            id:-1,
-            username:'',
-            name:'',
-            city:'',
-            phone_number:'',
-            description:''
+            id: -1,
+            username: '',
+            name: '',
+            city: '',
+            phone_number: '',
+            description: ''
         },
-
+        cityArray: [],
+        selectCity:''
     }
 
     form = React.createRef()
-    responseForm = React.createRef()
     searchInput = React.createRef()
 
     uploadButton = (
@@ -88,42 +89,6 @@ class AllFlavor extends Component {
         this.setState({ open: true })
     }
 
-    
-
-    hadnleResponseOk = () => {
-        const { id } = this.state.modalState
-        const { response } = this.responseForm.current.getFieldsValue()
-        const { userData } = this.props
-        var dateString = new Date().toISOString()
-        dateString = dateString.substring(0, dateString.length - 1);
-        axios({
-            url: '/our/data/taste/add',
-            method: 'post',
-            data: {
-                req_id: id,
-                user_id: userData.id,
-                description: response,
-                crea_time: dateString,
-                mod_time: dateString,
-                state: 0
-            }
-        })
-            .then(
-                (res) => {
-                    message.success("响应成功")
-                }
-            )
-            .catch(
-                (err) => {
-                    message.error("响应失败")
-                }
-            )
-        this.setState({ responseOpen: false })
-    }
-
-    hadnleResponseCancel = () => {
-        this.setState({ responseOpen: false })
-    }
 
     handleOk = async () => {
         this.setState({ open: false })
@@ -218,15 +183,45 @@ class AllFlavor extends Component {
     });
 
 
+    confirmCity = ()=>{
+        const {selectCity} = this.state
+        this.updateTable(selectCity)
+    }
+
     componentWillMount = () => {
-        const { userData, getAllUser } = this.props
+        axios({
+            method: 'get',
+            url: '/api/address/list',
+            params: {
+                app_id: "cqsitjqrmnfjmljl",
+                //注意:这种字符串千万不要使用图片识别，容易得到全角字符导致难以发现问题
+                app_secret: "aXpOMW5KNjNTYzJwR1h2VXRBRE9GUT09"
+            }
+        })
+            .then(
+                (res) => {
+                    const cityArray = getCityArray(res.data.data)
+                    this.setState({ cityArray: cityArray })
+
+                }
+            )
+            .catch(
+                (err) => {
+                    alert("网络故障,请尝试刷新页面")
+                }
+            )
+        const { userData} = this.props
+        this.updateTable(userData.city)
+    }
+
+    updateTable = (city) => {
+        const { getAllUser } = this.props
         getAllUser()
-        //TODO:这里需要所有的search,后端还需要参数
         axios({
             url: '/our/data/search/query2',
             method: 'get',
             params: {
-                city: userData.city
+                city: city
             }
         })
             .then(
@@ -248,10 +243,22 @@ class AllFlavor extends Component {
             )
     }
     render() {
-        const { open, modalState, goodFlavorData, fileList, previewOpen, previewTitle, previewImage, userModalState,userModalOpen } = this.state
+        const { open, modalState, goodFlavorData, fileList, previewOpen, previewTitle, previewImage, userModalState, userModalOpen,
+            cityArray } = this.state
 
         return (
             <>
+                <Cascader 
+                    options={cityArray}
+                    placeholder="请选择您所要查看城市"
+                    onChange={(value)=>{
+                        this.setState({selectCity:value[0]+value[1]})
+                }}>
+                </Cascader>
+                <Button
+                    onClick={this.confirmCity}>
+                    确定
+                </Button>
                 <Table dataSource={goodFlavorData}
                     onRow={record => {
                         return {
@@ -285,9 +292,31 @@ class AllFlavor extends Component {
                             onMouseLeave: event => { },
                         };
                     }}>
-                    {/** //TODO:增加一列请求状态 */}
                     <Column title="用户标识" dataIndex="user_id" key="user_id" {...this.getColumnSearchProps('user_id')} />
                     <Column title="寻味道主题" dataIndex="req_name" key="req_name" {...this.getColumnSearchProps('req_name')} />
+                    <Column title="寻味道状态" dataIndex="state" key="state"
+                        render={(state) => {
+                            var stateString = ''
+                            switch (state) {
+                                case 0:
+                                    stateString = '待响应'
+                                    break
+                                case 1:
+                                    stateString = '已完成'
+                                    break
+                                case 2:
+                                    stateString = '到期未达成'
+                                    break
+                                default:
+                                    stateString = "error"
+                            }
+                            return (<>
+                                <Tag color="blue" key={stateString}>
+                                    {stateString}
+                                </Tag>
+                            </>)
+
+                        }} />
                     <Column
                         title="味道类型"
                         dataIndex="flavor_type"
@@ -300,26 +329,27 @@ class AllFlavor extends Component {
                             </>
                         )}
                     />
+                    <Column title="寻味道状态" dataIndex="state" key="state" />
                     <Column
                         title="操作"
                         key="action"
                         render={(_, record) => (
                             <Space size="middle">
                                 <a onClick={this.checkGoodFlavor}>查看请求</a>
-                                <a onClick={()=>{
-                                    const {allUserData} = this.props
-                                    for(let item of allUserData){
-                                        if(item.id === userModalState.id){
+                                <a onClick={() => {
+                                    const { allUserData } = this.props
+                                    for (let item of allUserData) {
+                                        if (item.id === userModalState.id) {
                                             userModalState.username = item.username
                                             userModalState.name = item.name
                                             userModalState.city = item.city
                                             userModalState.phone_number = item.phone_number
                                             userModalState.description = item.description
-                                            this.setState({userModalState})
+                                            this.setState({ userModalState })
                                             break
                                         }
                                     }
-                                    this.setState({userModalOpen:true})
+                                    this.setState({ userModalOpen: true })
                                 }}>查看用户</a>
                             </Space>
                         )}
@@ -343,9 +373,6 @@ class AllFlavor extends Component {
                         preserve={false}
                         ref={this.form}>
                         <Form.Item name="flavorType" label="味道类型" initialValue={modalState.flavorType}>
-                            {/**
-                         * //TODO:需要确认Radio的使用方法
-                         */}
                             <Radio.Group>
                                 <Radio value="嘉兴小吃">家乡小吃</Radio>
                                 <Radio value="地方特色小馆">地方特色小馆</Radio>

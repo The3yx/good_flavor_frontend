@@ -1,27 +1,28 @@
 import React, { Component } from 'react'
 import { connect } from "react-redux";
-import { Button, Modal, Form, Input, message } from 'antd';
+import { Button, Modal, Form, Input, message, Popconfirm } from 'antd';
 import { Table, Tag, Space, } from 'antd';
 import { SearchOutlined, } from "@ant-design/icons";
 import Highlighter from 'react-highlight-words';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { getBase64 } from '../../utils/getBase64';
-const {TextArea}  = Input
 
+const {TextArea}  = Input
 const { Column, ColumnGroup } = Table;
 
-//TODO:响应状态数字到状态的对应关系
-class MyTaste extends Component {
+class MyResponse extends Component {
   state = {
     tasteData: [],
     searchedColumn: '',
     searchText: '',
     taste_id: 0,
+    req_id:0,
+    user_id:0,
     open: false,
     modalState: {
-      id:-1,
-      user_id:-1,
+      id: -1,
+      user_id: -1,
       req_id: -1,
       description: '',
       crea_time: '',
@@ -34,58 +35,109 @@ class MyTaste extends Component {
 
   searchInput = React.createRef()
 
-  changeMyTaste = () => {
+  cancel = ()=>{
+
+  }
+  checkResponse = () => {
     this.setState({ open: true })
   }
 
-
-  deleteMyTaste = () => {
-    const { taste_id } = this.state
+  receiveResponse = () => {
+    const {taste_id, req_id, user_id} = this.state
+    const {userData} = this.props
+    //更新请品鉴
     axios({
-      url: '/our/data/taste/delete',
-      method: 'post',
-      params: {
-        id: taste_id
+      url:'/our/data/taste/update_state',
+      method:'post',
+      params:{
+        id:taste_id,
+        s:1
       }
     })
-      .then(
-        (res) => {
-          console.log(res)
-          message.success("删除成功")
-          const { userData } = this.props
-          axios({
-            url: '/our/data/taste/query1',
-            method: 'get',
-            params: {
-              user_id: userData.id
-            }
-          })
-            .then(
-              (res => {
-                const data = res.data
-                this.setState({
-                  tasteData: data.map((value, index) => {
-                    return { ...value, key: value.id }
-                  })
-                })
+    .then(
+      (res)=>{
+        message.success("接受成功")
+        this.updateTable()
+      }
+    )
+    .catch(
+      (err)=>{
+        message.success("接受失败")
+      }
+    )
+    //更新寻味道
+    axios({
+      url:'/our/data/search/update_state',
+      method:'post',
+      params:{
+        id:req_id,
+        s:1,
+      }
+    })
+    .then(res=>{
+      console.log(res)
+    })
+    .catch(err=>{
+      console.log(err)
+    })
 
-              })
-            )
-            .catch(
-              (err) => {
-                console.log(err)
-              }
-            )
-        }
-      )
-      .catch(
-        (err) => {
-          message.error("删除失败")
-        }
-      )
-
+    //TODO更新寻味道成功表
+    var dateString = dayjs().format("YYYY-MM-DD")
+    axios({
+      url:'/our/data/success_add',
+      method:'post',
+      data:{
+        req_id:req_id,
+        user1_id:userData.id,
+        user2_id:user_id,
+        finish_time:dateString,
+        fee1:3,
+        fee2:1
+      }
+    })
+    .then((res=>{
+      console.log(res)
+    }))
+    .catch((err)=>{
+      console.log(err)
+    })
   }
-
+  refuseResponse = () => {
+    const {taste_id, req_id} = this.state
+    axios({
+      url:'/our/data/taste/update_state',
+      method:'post',
+      params:{
+        id:taste_id,
+        s:2
+      }
+    })
+    .then(
+      (res)=>{
+        message.success("拒绝成功")
+        this.updateTable()
+      }
+    )
+    .catch(
+      (err)=>{
+        message.success("拒绝失败")
+      }
+    )
+    axios({
+      url:'/our/data/search/update_state',
+      method:'post',
+      params:{
+        id:req_id,
+        s:0
+      }
+    })
+    .then(res=>{
+      console.log(res)
+    })
+    .catch(err=>{
+      console.log(err)
+    })
+  }
 
 
   handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -172,9 +224,12 @@ class MyTaste extends Component {
   });
 
   componentWillMount = () => {
+    this.updateTable()
+  }
+  updateTable = () =>{
     const { userData } = this.props
     axios({
-      url: '/our/data/taste/query1',
+      url: '/our/data/taste/query2',
       method: 'get',
       params: {
         user_id: userData.id
@@ -198,6 +253,7 @@ class MyTaste extends Component {
         }
       )
   }
+   
   render() {
     const { tasteData, open, modalState, description } = this.state
     const { userData } = this.props
@@ -211,20 +267,20 @@ class MyTaste extends Component {
               onContextMenu: event => { },
               onMouseEnter: event => {
                 modalState.user_id = record.user_id
-                modalState.req_id= record.req_id
+                modalState.req_id = record.req_id
                 modalState.id = record.id
                 modalState.description = record.description
                 modalState.crea_time = record.crea_time
                 modalState.state = record.state
-                this.setState({ taste_id: record.id, modalState })
+                this.setState({ taste_id: record.id, req_id:record.req_id, user_id: record.user_id, modalState })
               }, // 鼠标移入行
               onMouseLeave: event => { },
             };
           }}>
-          {/** //TODO:增加一列请求状态 */}
-          <Column title="请品鉴标识" dataIndex="id" key="id" {...this.getColumnSearchProps('id')} />
-          <Column title="请品鉴描述" dataIndex="description" key="description" {...this.getColumnSearchProps('description')} />
-          <Column title="请品鉴状态" dataIndex="state" key="state" 
+          <Column title="寻味道标识" dataIndex="req_id" key="req_id" {...this.getColumnSearchProps('req_id')} />
+          <Column title="响应标识" dataIndex="id" key="id" {...this.getColumnSearchProps('id')} />
+          <Column title="响应描述" dataIndex="description" key="description" {...this.getColumnSearchProps('description')} />
+          <Column title="响应状态" dataIndex="state" key="state" 
                         render={(state)=>{
                             var stateString = ''
                             switch(state){
@@ -248,91 +304,54 @@ class MyTaste extends Component {
                             
                         }}/>
           <Column
-            title="请品鉴状态"
-            dataIndex="state"
-            key="state"
-            render={(tag) => (
-              <>
-                <Tag color="blue" key={tag}>
-                  {tag}
-                </Tag>
-              </>
-            )}
-          />
-          <Column
             title="操作"
             key="action"
-            render={(_, record) => (
-              <Space size="middle">
-                <a onClick={this.changeMyTaste}>编辑</a>
-                <a onClick={this.deleteMyTaste}>删除</a>
+            render={(_, record) => {
+              return(
+                <Space size="middle">
+                <a onClick={this.checkResponse}>查看</a>
+                {/**使用气泡确认框 */}
+                <Popconfirm
+                  title="确认接受？"
+                  onConfirm={this.receiveResponse}
+                  onCancel={this.cancel}
+                  okText="是"
+                  cancelText="否"
+                >
+                  <a style={{display:record.state == 0?"inline":"none"}} href="#">接受</a>
+                </Popconfirm>
+                <Popconfirm
+                  title="确认拒绝？"
+                  onConfirm={this.refuseResponse}
+                  onCancel={this.cancel}
+                  okText="是"
+                  cancelText="否"
+                >
+                  <a style={{display:record.state == 0?"inline":"none"}} href="#">拒绝</a>
+                </Popconfirm>
+                {/* <a onClick={this.receiveResponse}>接收</a>
+                <a onClick={this.refuseResponse}>拒接</a> */}
               </Space>
-            )}
+              )
+            }}
           />
         </Table>
 
 
-        {/**编辑请品鉴对话框 */}
+        {/**查看请品鉴对话框 */}
         <Modal
           open={open}
           destroyOnClose={true}
           okText="确认"
           cancelText="取消"
           onOk={() => {
-            var dateString = new Date().toISOString()
-            dateString = dateString.substring(0, dateString.length - 1);
-            axios({
-              url: '/our/data/taste/change',
-              method: 'post',
-              data: {
-                req_id: modalState.req_id,
-                user_id: modalState.user_id,
-                description: description,
-                state: modalState.state,
-                crea_time: modalState.crea_time,
-                mod_time: dateString,
-                id:modalState.id
-              }
-            })
-              .then(
-                (res) => {
-                  message.success("修改成功")
-                  axios({
-                    url: '/our/data/taste/query1',
-                    method: 'get',
-                    params: {
-                      user_id: userData.id
-                    }
-                  })
-                    .then(
-                      (res => {
-                        const data = res.data
-                        this.setState({
-                          tasteData: data.map((value, index) => {
-                            return { ...value, key: value.id }
-                          })
-                        })
-
-                      })
-                    )
-                    .catch(
-                      (err) => {
-                        console.log(err)
-                      }
-                    )
-                }
-              )
-              .catch(
-                (err) => {
-                  message.error("修改失败")
-                }
-              )
             this.setState({ open: false })
           }}
           onCancel={() => {
             this.setState({ open: false })
           }}>
           <TextArea
+            disabled={true}
             defaultValue={modalState.description}
             onChange={(e) => {
               const value = e.target.value
@@ -346,5 +365,4 @@ class MyTaste extends Component {
     )
   }
 }
-
-export default connect((state) => ({ userData: state.userData }), {})(MyTaste);
+export default connect((state) => ({ userData: state.userData }), {})(MyResponse);

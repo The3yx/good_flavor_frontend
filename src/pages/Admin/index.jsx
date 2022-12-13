@@ -15,6 +15,7 @@ import Taste from '../Taste'
 import AllFlavor from '../AllFlavor';
 import AllTaste from '../AllTaste';
 import Benefits from '../Benefits';
+import MyResponse from '../MyResponse';
 import './index.css'
 
 const { SubMenu } = Menu;
@@ -65,10 +66,11 @@ class Admin extends Component {
                 <SubMenu key="sub1" icon={<NotificationOutlined />} title="个人主页">
                   <Menu.Item key="/userinfo"><Link to="/admin/userinfo">我的信息</Link></Menu.Item>
                   <Menu.Item key="/mygoodflavor"><Link to="/admin/mygoodflavor">我的寻味道</Link></Menu.Item>
+                  <Menu.Item key="/myresponse"><Link to="/admin/myresponse">我的响应</Link></Menu.Item>
                   <Menu.Item key="/mytaste"><Link to="/admin/mytaste">我的请品鉴</Link></Menu.Item>
                 </SubMenu>
                 <Menu.Item key="/goodflavorhall"><Link to="/admin/goodflavorhall">寻味道大厅</Link></Menu.Item>
-                {/**style={{ display: userData.is_admin == true ? 'block' : 'none' }} */}
+                {/** //TODO:style={{ display: userData.is_admin == true ? 'block' : 'none' }} */}
                 <SubMenu key="sub2" icon={<NotificationOutlined />} title="管理员选项">
                   <Menu.Item key="/alluser"><Link to="/admin/alluser">用户信息</Link></Menu.Item>
                   <Menu.Item key="/goodflavor"><Link to="/admin/allflavor">寻味道</Link></Menu.Item>
@@ -92,6 +94,7 @@ class Admin extends Component {
                 <Route path="/admin/alltaste" component={AllTaste}/>
                 <Route path="/admin/allflavor" component={AllFlavor}/>
                 <Route path="/admin/benefits" component={Benefits}/>
+                <Route path="/admin/myresponse" component={MyResponse}/>
                 <Redirect to="/admin/userinfo" />
                 {/* exact={true} from="/admin"  */}
               </Switch>

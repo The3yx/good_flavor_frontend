@@ -28,6 +28,8 @@ class Login extends Component {
       return alert(x.errors);
     });
   };
+
+  //TODO:登录时的格式验证没必要,只要有值就行
   validatePwd = (rule, value) => {
     if (!value) {
       return Promise.reject("请输入密码!");
