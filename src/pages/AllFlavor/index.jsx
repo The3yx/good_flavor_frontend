@@ -329,7 +329,6 @@ class AllFlavor extends Component {
                             </>
                         )}
                     />
-                    <Column title="寻味道状态" dataIndex="state" key="state" />
                     <Column
                         title="操作"
                         key="action"
@@ -369,6 +368,10 @@ class AllFlavor extends Component {
                 >
                     {/**Form表单的使用参见Form组件文档：搜索:Click or drag file to this area to upload */}
                     <Form
+                        labelAlign="left"
+                        labelCol={{ flex: '100px' }}
+                        wrapperCol={
+                          { flex: '1' }}
                         disabled={true}
                         preserve={false}
                         ref={this.form}>

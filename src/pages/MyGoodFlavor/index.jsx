@@ -74,7 +74,7 @@ class MyGoodFlavor extends Component {
     }
 
     addMyGoodFlavor = () => {
-        const {modalState} = this.state
+        const {modalState, fileList} = this.state
         modalState.id = 0
         modalState.userid = 0
         modalState.flavorType= ''
@@ -86,9 +86,10 @@ class MyGoodFlavor extends Component {
         modalState.goodFlavorEndTime=new Date().toISOString()
         modalState.goodFlavorState=-1
         modalState.picture=''
-        const open = this.state.open
+        fileList.pop()
+         
 
-        this.setState({ open: true, modalState })
+        this.setState({ open: true, modalState, fileList })
     }
 
     checkMyGoodFlavor = () => {
@@ -142,11 +143,11 @@ class MyGoodFlavor extends Component {
     }
 
     handleOk = async () => {
-        const { flavorType, description, maxprice, picture, searchChangeTime, searchCreateTime, searchEndTime, theme } = this.form.current.getFieldsValue()
+        const { flavorType, description, maxprice, picture, searchEndTime, theme } = this.form.current.getFieldsValue()
         const {id, goodFlavorState} = this.state.modalState
         const { userData } = this.props
-        const createTime = searchCreateTime.format('YYYY-MM-DDTHH:mm:ss')
-        const modifyTime = searchChangeTime.format('YYYY-MM-DDTHH:mm:ss')
+        const createTime = dayjs().format('YYYY-MM-DDTHH:mm:ss')
+        const modifyTime = dayjs().format('YYYY-MM-DDTHH:mm:ss')
         const endTime = searchEndTime.format('YYYY-MM-DD')
         var pictureString = this.state.modalState.picture
         if(picture)
@@ -437,6 +438,10 @@ class MyGoodFlavor extends Component {
                 >
                     {/**Form表单的使用参见Form组件文档：搜索:Click or drag file to this area to upload */}
                     <Form
+                        labelAlign="left"
+                        labelCol={{ flex: '100px' }}
+                        wrapperCol={
+                          { flex: '1' }}
                         preserve={false}
                         ref={this.form}>
                         <Form.Item name="flavorType" label="味道类型" initialValue={modalState.flavorType}>
@@ -477,14 +482,6 @@ class MyGoodFlavor extends Component {
                          * 接管子组件的value
                          * initialValue 不能被 setState 动态更新，你需要用 setFieldsValue 来更新。
                          */}
-                        <Form.Item label="请求创建日期" name="searchCreateTime" initialValue={dayjs(modalState.goodFlavorCreateTime)}>
-                            <DatePicker showTime >
-                            </DatePicker>
-                        </Form.Item>
-                        <Form.Item label="请求结束日期" name="searchChangeTime" initialValue={dayjs(modalState.goodFlavorChangeTime)}>
-                            <DatePicker showTime>
-                            </DatePicker>
-                        </Form.Item>
                         <Form.Item label="请求结束日期" name="searchEndTime" initialValue={dayjs(modalState.goodFlavorEndTime)}>
                             <DatePicker>
                             </DatePicker>
