@@ -29,7 +29,6 @@ class AllFlavor extends Component {
             goodFlavorChangeTime: new Date().toISOString(),
             goodFlavorEndTime: new Date().toISOString(),
             goodFlavorState: -1,
-            picture: ''
         },
         searchedColumn: '',
         searchText: '',
@@ -271,7 +270,6 @@ class AllFlavor extends Component {
                                 modalState.theme = record.req_name
                                 modalState.goodFlavorCreateTime = record.crea_time
                                 modalState.goodFlavorChangeTime = record.mod_time
-                                modalState.picture = record.photo
                                 modalState.goodFlavorState = record.state
                                 userModalState.id = record.user_id
                                 this.setState({

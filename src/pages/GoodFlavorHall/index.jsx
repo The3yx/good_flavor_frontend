@@ -29,7 +29,6 @@ class GoodFlavorHall extends Component {
             goodFlavorChangeTime: new Date().toISOString(),
             goodFlavorEndTime: new Date().toISOString(),
             goodFlavorState: -1,
-            picture: ''
         },
         searchedColumn: '',
         searchText: '',
@@ -256,7 +255,6 @@ class GoodFlavorHall extends Component {
                                 modalState.theme = record.req_name
                                 modalState.goodFlavorCreateTime = record.crea_time
                                 modalState.goodFlavorChangeTime = record.mod_time
-                                modalState.picture = record.photo
                                 modalState.goodFlavorState = record.state
                                 this.setState({
                                     modalState, fileList: [{
@@ -339,6 +337,10 @@ class GoodFlavorHall extends Component {
                 >
                     {/**Form表单的使用参见Form组件文档：搜索:Click or drag file to this area to upload */}
                     <Form
+                        labelAlign="left"
+                        labelCol={{ flex: '100px' }}
+                        wrapperCol={
+                          { flex: '1' }}
                         disabled={true}
                         preserve={false}
                         ref={this.form}>
@@ -380,14 +382,6 @@ class GoodFlavorHall extends Component {
                          * 接管子组件的value
                          * initialValue 不能被 setState 动态更新，你需要用 setFieldsValue 来更新。
                          */}
-                        <Form.Item label="请求创建日期" name="searchCreateTime" initialValue={dayjs(modalState.goodFlavorCreateTime)}>
-                            <DatePicker showTime >
-                            </DatePicker>
-                        </Form.Item>
-                        <Form.Item label="请求结束日期" name="searchChangeTime" initialValue={dayjs(modalState.goodFlavorChangeTime)}>
-                            <DatePicker showTime>
-                            </DatePicker>
-                        </Form.Item>
                         <Form.Item label="请求结束日期" name="searchEndTime" initialValue={dayjs(modalState.goodFlavorEndTime)}>
                             <DatePicker>
                             </DatePicker>

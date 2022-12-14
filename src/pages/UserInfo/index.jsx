@@ -9,7 +9,7 @@ import axios from 'axios';
 import { receiveUser } from '../../redux/actions';
 
 const { TextArea } = Input
-//TODO:更新密码框时和更新手机号还需要验证格式
+
 class UserInfo extends Component {
   state = {
     infoChange: false,
@@ -20,6 +20,37 @@ class UserInfo extends Component {
   form = React.createRef()  //UserInfo页面表单的ref
   modalForm = React.createRef()   //修改密码页面表单的ref
   checkModalForm = React.createRef()  //验证密码表单的ref
+
+  validatePwd = (rule, value) => {
+    if (!value) {
+      return Promise.reject("请输入密码!");
+    } else if (value.length < 6) {
+      return Promise.reject("密码不能小于6");
+    } else {
+      let count = 0
+      for(let c of value){
+        let numReg = /^[0-9]+.?[0-9]*/
+        if (numReg.test(c)){
+          count += 1
+        }
+      }
+      if(count<2)
+        return Promise.reject("密码必须含有两个数字");
+      return Promise.resolve(); //验证通过
+    }
+  };
+
+  validatePhoneNumber = (rule, value) => {
+    if (!value) {
+      return Promise.reject("手机号必须输入");
+    } else if (!/^[0-9]+$/.test(value)) {
+      return Promise.reject("手机号格式不正确");
+    } else if (value.length !== 11) {
+      return Promise.reject("手机号格式不正确");
+    }else {
+      return Promise.resolve(); //验证通过
+    }
+  }
 
   handleOkCheck = () => {
     const { password } = this.checkModalForm.current.getFieldsValue()
@@ -192,11 +223,22 @@ class UserInfo extends Component {
           </Form.Item>
           <Form.Item label="手机号码" name="phone_number" initialValue={userData.phone_number}>
             <Input
+              rules={[
+                {
+                  validator: this.validatePhoneNumber,
+                },
+              ]}
               disabled={!infoChange}>
             </Input>
           </Form.Item>
           <Form.Item label="个人简介" name="description" initialValue={userData.description}>
             <TextArea
+              rules={[
+                {
+                  required: true,
+                  message: "请输入个人简介",
+                },
+              ]}
               disabled={!infoChange}
               rows={1}
               placeholder="个人简介">
@@ -275,19 +317,35 @@ class UserInfo extends Component {
             labelCol={{ flex: '75px' }}
             wrapperCol={
               { flex: '1' }}>
-            <Form.Item label="密码" name="oldPassword">
+            <Form.Item label="密码" name="oldPassword"
+              rules={[
+                {
+                  required:true,
+                  message:"请输入旧密码"
+                },
+              ]}>
               <Input
                 type='password'
                 placeholder='请输入旧密码'>
               </Input>
             </Form.Item>
-            <Form.Item label="新密码" name="newPassword">
+            <Form.Item label="新密码" name="newPassword"
+              rules={[
+                {
+                  validator: this.validatePwd,
+                },
+              ]}>
               <Input
                 type='password'
                 placeholder='请输入新密码'>
               </Input>
             </Form.Item>
-            <Form.Item label="密码" name="confirmNewPassword">
+            <Form.Item label="密码" name="confirmNewPassword"
+              rules={[
+                {
+                  validator: this.validatePwd,
+                },
+              ]}>
               <Input
                 type='password'
                 placeholder='请再次输入新密码'>

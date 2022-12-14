@@ -11,7 +11,7 @@ import { base64ToFile } from '../../utils/base64ToFile';
 
 const { Column, ColumnGroup } = Table;
 
-//TODO:好味道创建表单中不应该有修改时间和创建时间选择框...
+
 class MyGoodFlavor extends Component {
     state = {
         goodFlavorData: [
@@ -28,7 +28,6 @@ class MyGoodFlavor extends Component {
             goodFlavorChangeTime: new Date().toISOString(),
             goodFlavorEndTime: new Date().toISOString(),
             goodFlavorState: -1,
-            picture: ''
         },
         searchedColumn: '',
         searchText: '',
@@ -144,17 +143,15 @@ class MyGoodFlavor extends Component {
 
     handleOk = async () => {
         const { flavorType, description, maxprice, picture, searchEndTime, theme } = this.form.current.getFieldsValue()
-        const {id, goodFlavorState} = this.state.modalState
+        const {id, goodFlavorState, goodFlavorCreateTime, } = this.state.modalState
         const { userData } = this.props
-        const createTime = dayjs().format('YYYY-MM-DDTHH:mm:ss')
         const modifyTime = dayjs().format('YYYY-MM-DDTHH:mm:ss')
         const endTime = searchEndTime.format('YYYY-MM-DD')
-        var pictureString = this.state.modalState.picture
         if(picture)
-            pictureString = await getBase64(picture.file)
+            var pictureString = await getBase64(picture.file)
 
-        console.log(pictureString)
         if(goodFlavorState === -1){
+            const createTime = dayjs().format('YYYY-MM-DDTHH:mm:ss')
             axios({
                 url: '/our/data/search/add',
                 method: 'post',
@@ -183,6 +180,7 @@ class MyGoodFlavor extends Component {
                     }
                 )
         }else{
+            const createTime = goodFlavorCreateTime.format('YYYY-MM-DDTHH:mm:ss')
             axios({
                 url:'/our/data/search/change',
                 method:'post',
@@ -358,7 +356,6 @@ class MyGoodFlavor extends Component {
                                 modalState.theme = record.req_name
                                 modalState.goodFlavorCreateTime = record.crea_time
                                 modalState.goodFlavorChangeTime = record.mod_time
-                                modalState.picture = record.photo
                                 modalState.goodFlavorState = record.state
                                 this.setState({ modalState,fileList:[{
                                     uid:'-1',

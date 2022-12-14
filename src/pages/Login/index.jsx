@@ -12,15 +12,15 @@ import { connect } from "react-redux";
 import { login, getAllUser } from "../../redux/actions";
 
 class Login extends Component {
+  state = {
+    redirectRegister: false
+  }
   onFinish = async (values) => {
     console.log('call onFinish')
     const { username, password } = values;
 
     //调用异步请求，
     this.props.login(username, password);
-
-    //TODO:需要判断管理员权限
-    this.props.getAllUser()
 
   };
   onFinishFailed = (values, errorFields, outOfDate) => {
@@ -38,6 +38,13 @@ class Login extends Component {
   };
 
   render() {
+
+    //redirect to <Register/>
+    const {redirectRegister} = this.state
+    if(redirectRegister){
+      return <Redirect to="/login"/>
+    }
+
     //have logined ==> <Admin/>
     const userData = this.props.userData;
     const { history } = this.props
@@ -107,9 +114,6 @@ class Login extends Component {
                   登录
                 </Button>
               </Form.Item>
-              {/**
-               * //TODO:这里的注册需要改
-               */}
               <Form.Item>
                 <Button
                   className="login-form-button"

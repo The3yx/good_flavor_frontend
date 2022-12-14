@@ -38,8 +38,6 @@ class Register extends Component {
       return alert("密码不一致")
     }
 
-
-    //TODO:删除添加寻味道里的两个时间框
     //必须删除掉最后的Z字符,否则会400
     //Note:密码不能有 .
     var dateString = new Date().toISOString()
