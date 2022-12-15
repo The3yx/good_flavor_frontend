@@ -46,7 +46,7 @@ class AllFlavor extends Component {
             description: ''
         },
         cityArray: [],
-        selectCity:''
+        selectCity:this.props.userData.city
     }
 
     form = React.createRef()
@@ -247,11 +247,14 @@ class AllFlavor extends Component {
 
         return (
             <>
-                <Cascader 
+                <Cascader
+                    defaultValue={['陕西省','西安市']}
+                    allowClear={false}
                     options={cityArray}
                     placeholder="请选择您所要查看城市"
                     onChange={(value)=>{
-                        this.setState({selectCity:value[0]+value[1]})
+                        if(value)
+                            this.setState({selectCity:value[0]+value[1]})
                 }}>
                 </Cascader>
                 <Button
