@@ -243,7 +243,7 @@ class GoodFlavorHall extends Component {
 
         return (
             <>
-                <Table dataSource={goodFlavorData}
+                <Table dataSource={goodFlavorData} bordered={true}
                     onRow={record => {
                         return {
                             onClick: event => {

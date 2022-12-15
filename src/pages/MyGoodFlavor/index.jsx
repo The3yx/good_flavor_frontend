@@ -344,7 +344,7 @@ class MyGoodFlavor extends Component {
                 </Button>
 
 
-                <Table dataSource={goodFlavorData}
+                <Table dataSource={goodFlavorData} bordered={true}
                     onRow={record => {
                         return {
                             onClick: event => {

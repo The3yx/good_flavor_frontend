@@ -258,7 +258,7 @@ class AllFlavor extends Component {
                     onClick={this.confirmCity}>
                     确定
                 </Button>
-                <Table dataSource={goodFlavorData}
+                <Table dataSource={goodFlavorData} bordered={true}
                     onRow={record => {
                         return {
                             onClick: event => {

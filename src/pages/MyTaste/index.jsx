@@ -203,7 +203,7 @@ class MyTaste extends Component {
     const { userData } = this.props
     return (
       <>
-        <Table dataSource={tasteData}
+        <Table dataSource={tasteData} bordered={true}
           onRow={record => {
             return {
               onClick: event => { }, // 点击行

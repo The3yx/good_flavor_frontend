@@ -69,7 +69,8 @@ class Admin extends Component {
                   <Menu.Item key="/mytaste"><Link to="/admin/mytaste">我的请品鉴</Link></Menu.Item>
                 </SubMenu>
                 <Menu.Item key="/goodflavorhall"><Link to="/admin/goodflavorhall">寻味道大厅</Link></Menu.Item>
-                <SubMenu key="sub2" icon={<NotificationOutlined />} title="管理员选项" style={{ display: userData.is_admin == true ? 'block' : 'none' }}>
+                {/* style={{ display: userData.is_admin == true ? 'block' : 'none' }} */}
+                <SubMenu key="sub2" icon={<NotificationOutlined />} title="管理员选项" >
                   {/* <Menu.Item key="/alluser"><Link to="/admin/alluser">用户信息</Link></Menu.Item> */}
                   <Menu.Item key="/goodflavor"><Link to="/admin/allflavor">寻味道</Link></Menu.Item>
                   <Menu.Item key="/taste"><Link to="/admin/alltaste">请品鉴</Link></Menu.Item>
