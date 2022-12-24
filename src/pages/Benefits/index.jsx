@@ -9,6 +9,8 @@ import getCityArray from "../../utils/getCityUtils";
 const { Column, ColumnGroup } = Table;
 const { RangePicker } = DatePicker;
 
+
+
 class Benefits extends Component {
   state = {
     cityArray: [],
@@ -16,7 +18,8 @@ class Benefits extends Component {
     datePair: [],
     selectCity: this.props.userData.city,
     echartsDataX: [],
-    echartsDataFee: []
+    echartsDataFee: [],
+    echartsDataTimes:[]
   }
 
 
@@ -26,7 +29,8 @@ class Benefits extends Component {
     var params = {city:selectCity}
     if (datePair.length !== 0){
       params.start_time=dayjs(datePair[0]).format('YYYY-MM-DD')
-      params.stop_time=dayjs(datePair[1]).format('YYYY-MM-DD')
+      params.stop_time=dayjs(datePair[1]).add(1,'month').subtract(1,'day').format('YYYY-MM-DD')
+      console.log(params)
     }
     console.log(params)
     axios({
@@ -39,9 +43,9 @@ class Benefits extends Component {
           const data = res.data.map((value, index) => {
             return { ...value, fee: value.fee1 + value.fee2 }
           })
-          const {echartsDataX, echartsDataFee} = this.constructEchartsData(data)
+          const {echartsDataX, echartsDataFee, echartsDataTimes} = this.constructEchartsData(data)
 
-          this.setState({ benefitsData: data, echartsDataX:echartsDataX, echartsDataFee:echartsDataFee })
+          this.setState({ benefitsData: data, echartsDataX:echartsDataX, echartsDataFee:echartsDataFee,echartsDataTimes:echartsDataTimes })
 
         }
       )
@@ -63,9 +67,11 @@ class Benefits extends Component {
     })
 
     const newMap = new Map()
+    const newTimesMap = new Map()
     newData.forEach((e)=>{
       const k = e['finish_time']
       newMap.set(k,(newMap.get(k)||0)+Number(e['fee']))
+      newTimesMap.set(k,(newTimesMap.get(k)||0)+1)
     })
 
     //Note:sort方法是根据返回值与0的大小关系判断的
@@ -75,13 +81,17 @@ class Benefits extends Component {
       else
         return -1
     })
+ 
     const Xdata = []
     const Ydata = []
+    const YTimesData = []
     for(let item of sortArr){
       Xdata.push(item[0])
       Ydata.push(item[1])
+      YTimesData.push(newTimesMap.get(item[0]))
     }
-    return {echartsDataX:Xdata, echartsDataFee:Ydata}
+    console.log(YTimesData)
+    return {echartsDataX:Xdata, echartsDataFee:Ydata, echartsDataTimes:YTimesData}
   }
 
   echartsOption=() =>({
@@ -117,12 +127,38 @@ class Benefits extends Component {
       {
         type: 'value',
         name: '中介费用/元'
+      },
+      {
+        type: 'value',
+        name: '成交单数/单'
       }
     ],
     series: [
       {
         name: '中介费用',
         data: this.state.echartsDataFee,
+        type: 'line',
+        yAxisIndex: 0,
+        itemStyle: {
+          normal: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: `rgba(255,0,255,.8)` },
+              { offset: 1, color: `rgba(0,255,0,.8)` },
+            ]),
+          },
+        },
+        lineStyle: {
+          width: 5,
+        },
+        areaStyle: {
+          normal: {
+            opacity: 0.1,
+          }
+        }
+      },
+      {
+        name: '成交单数',
+        data: this.state.echartsDataTimes,
         type: 'line',
         yAxisIndex: 0,
         itemStyle: {
@@ -183,9 +219,9 @@ class Benefits extends Component {
           const data = res.data.map((value, index) => {
             return { ...value, fee: value.fee1 + value.fee2 }
           })
-          const {echartsDataX, echartsDataFee} = this.constructEchartsData(data)
+          const {echartsDataX, echartsDataFee, echartsDataTimes} = this.constructEchartsData(data)
 
-          this.setState({ benefitsData: data, echartsDataX:echartsDataX, echartsDataFee:echartsDataFee })
+          this.setState({ benefitsData: data, echartsDataX:echartsDataX, echartsDataFee:echartsDataFee, echartsDataTimes:echartsDataTimes })
 
         }
       )
@@ -226,15 +262,32 @@ class Benefits extends Component {
         <div>
           <Table
             dataSource={benefitsData}
-            bordered={true}>
+            bordered={true}
+            locale={
+              {triggerDesc: '点击降序',
+              triggerAsc: '点击升序',
+              cancelSort: '取消排序',}
+            }>
             <ColumnGroup title="用户id">
               <Column title="寻味道用户id" dataIndex="user1_id" key="userid_1" />
               <Column title="请品鉴用户id" dataIndex="user2_id" key="userid_2" />
             </ColumnGroup>
             <Column title="味道类型" dataIndex="flavor_type" key="flavor_type" />
             <Column title="所在区域" dataIndex="city" key="city" />
-            <Column title="中介收益" dataIndex="fee" key="fee" />
-            <Column title="请求达成日期" dataIndex="finish_time" key="finish_time" />
+            <Column title="中介收益" dataIndex="fee" key="fee" 
+              sorter={(a,b)=>{
+                return a.fee-b.fee
+              }}
+              sortDirections={['descend',"ascend"]}
+              defaultSortOrder='descend'
+               />
+            <Column title="请求达成日期" dataIndex="finish_time" key="finish_time" 
+              sorter={(a,b)=>{
+                return a.finish_time>b.finish_time?1:-1
+              }}
+              sortDirections={['descend',"ascend"]}
+              defaultSortOrder='descend'
+              />
           </Table>
         </div>
         <div>

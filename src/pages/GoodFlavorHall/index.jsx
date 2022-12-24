@@ -12,6 +12,8 @@ const { TextArea } = Input
 
 const { Column, ColumnGroup } = Table;
 
+
+
 class GoodFlavorHall extends Component {
     state = {
         goodFlavorData: [
@@ -227,6 +229,8 @@ class GoodFlavorHall extends Component {
                     this.setState({
                         goodFlavorData: data.map((value, index) => {
                             return { ...value, key: value.id }
+                        }).filter((item)=>{
+                            return item.user_id !== userData.id
                         })
                     })
 
