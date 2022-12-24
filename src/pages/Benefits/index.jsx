@@ -68,12 +68,18 @@ class Benefits extends Component {
       newMap.set(k,(newMap.get(k)||0)+Number(e['fee']))
     })
 
-    const sortMap = new Map([...newMap].sort((a,b)=>a[0]>b[0]))
+    //Note:sort方法是根据返回值与0的大小关系判断的
+    const sortArr = [...newMap].sort((a,b)=>{
+      if(a[0]>b[0])
+        return 1
+      else
+        return -1
+    })
     const Xdata = []
     const Ydata = []
-    for(let [key,value] of sortMap){
-      Xdata.push(key)
-      Ydata.push(value)
+    for(let item of sortArr){
+      Xdata.push(item[0])
+      Ydata.push(item[1])
     }
     return {echartsDataX:Xdata, echartsDataFee:Ydata}
   }
@@ -174,10 +180,12 @@ class Benefits extends Component {
     })
       .then(
         (res) => {
-          var data = res.data.map((value, index) => {
+          const data = res.data.map((value, index) => {
             return { ...value, fee: value.fee1 + value.fee2 }
           })
-          this.setState({ benefitsData: data })
+          const {echartsDataX, echartsDataFee} = this.constructEchartsData(data)
+
+          this.setState({ benefitsData: data, echartsDataX:echartsDataX, echartsDataFee:echartsDataFee })
 
         }
       )
@@ -199,7 +207,6 @@ class Benefits extends Component {
           <RangePicker
             picker="month"
             onChange={(date, datePair) => {
-              console.log(datePair)
               this.setState({ datePair: datePair })
             }} />
           <Cascader

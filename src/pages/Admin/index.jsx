@@ -20,7 +20,7 @@ import './index.css'
 const { SubMenu } = Menu;
 const { Header, Content, Sider,Footer } = Layout;
 
-//TODO:缺少退出logout
+
 class Admin extends Component {
   render() {
     //get the userdata in local storage
@@ -57,8 +57,6 @@ class Admin extends Component {
               <Menu
                 theme='dark'
                 style={{ width: 200 }}
-                //TODO:defaultOpenKeys和defaultSelectedKeys不能写死,参见谷粒商城
-                //这个小问题, 不影响, 可改可不改
                 defaultOpenKeys={['sub1']}
                 defaultSelectedKeys={['/userinfo']}
                 mode="inline">
@@ -69,9 +67,7 @@ class Admin extends Component {
                   <Menu.Item key="/mytaste"><Link to="/admin/mytaste">我的请品鉴</Link></Menu.Item>
                 </SubMenu>
                 <Menu.Item key="/goodflavorhall"><Link to="/admin/goodflavorhall">寻味道大厅</Link></Menu.Item>
-                {/* style={{ display: userData.is_admin == true ? 'block' : 'none' }} */}
-                <SubMenu key="sub2" icon={<NotificationOutlined />} title="管理员选项" >
-                  {/* <Menu.Item key="/alluser"><Link to="/admin/alluser">用户信息</Link></Menu.Item> */}
+                <SubMenu key="sub2" icon={<NotificationOutlined />} style={{ display: userData.is_admin == true ? 'block' : 'none' }} title="管理员选项" >
                   <Menu.Item key="/goodflavor"><Link to="/admin/allflavor">寻味道</Link></Menu.Item>
                   <Menu.Item key="/taste"><Link to="/admin/alltaste">请品鉴</Link></Menu.Item>
                   <Menu.Item key="/benefits"><Link to="/admin/benefits">利润报表</Link></Menu.Item>

@@ -3,10 +3,9 @@ import { connect } from "react-redux";
 
 import { Button, Modal, Form, Input, message } from 'antd';
 import { Table, Tag, Space, DatePicker, Radio } from 'antd';
-
 import './index.css'
 import axios from 'axios';
-import { receiveUser } from '../../redux/actions';
+import { receiveUser, logout } from '../../redux/actions';
 
 const { TextArea } = Input
 
@@ -28,13 +27,13 @@ class UserInfo extends Component {
       return Promise.reject("密码不能小于6");
     } else {
       let count = 0
-      for(let c of value){
+      for (let c of value) {
         let numReg = /^[0-9]+.?[0-9]*/
-        if (numReg.test(c)){
+        if (numReg.test(c)) {
           count += 1
         }
       }
-      if(count<2)
+      if (count < 2)
         return Promise.reject("密码必须含有两个数字");
       return Promise.resolve(); //验证通过
     }
@@ -47,7 +46,7 @@ class UserInfo extends Component {
       return Promise.reject("手机号格式不正确");
     } else if (value.length !== 11) {
       return Promise.reject("手机号格式不正确");
-    }else {
+    } else {
       return Promise.resolve(); //验证通过
     }
   }
@@ -111,7 +110,7 @@ class UserInfo extends Component {
         }
       )
       .catch(
-        (err)=>{
+        (err) => {
           message.error('修改个人信息失败')
         }
       )
@@ -132,7 +131,7 @@ class UserInfo extends Component {
     if (newPassword !== confirmNewPassword) {
       alert("新密码不一致")
     }
-    
+
     axios({
       url: '/our/login',
       method: 'post',
@@ -193,169 +192,177 @@ class UserInfo extends Component {
     const openCheck = this.state.openCheck
     const { userData } = this.props
     return (
-      <div className='userinfo-content'>
-        <Form
-          ref={this.form}
-          labelAlign="left"
-          labelCol={{ flex: '75px' }}
-          wrapperCol={
-            { flex: '1' }}>
-
-          <Form.Item label="用户id">
-            <span>
-              {userData.id}
-            </span>
-          </Form.Item>
-          <Form.Item label="用户名">
-            <span>
-              {userData.username}
-            </span>
-          </Form.Item>
-          <Form.Item label="姓名">
-            <span>
-              {userData.name}
-            </span>
-          </Form.Item>
-          <Form.Item label="注册城市">
-            <span>
-              {userData.city}
-            </span>
-          </Form.Item>
-          <Form.Item label="手机号码" name="phone_number" initialValue={userData.phone_number}>
-            <Input
-              rules={[
-                {
-                  validator: this.validatePhoneNumber,
-                },
-              ]}
-              disabled={!infoChange}>
-            </Input>
-          </Form.Item>
-          <Form.Item label="个人简介" name="description" initialValue={userData.description}>
-            <TextArea
-              rules={[
-                {
-                  required: true,
-                  message: "请输入个人简介",
-                },
-              ]}
-              disabled={!infoChange}
-              rows={1}
-              placeholder="个人简介">
-            </TextArea>
-          </Form.Item>
-          <Form.Item>
-            <div>
-              <Button
-                onClick={() => {
-                  if (infoChange === false)
-                    this.setState({ infoChange: true })
-                  else {
-                    this.setState({ openCheck: true })
-                  }
-                }}>
-                {infoChange === true ? '确认修改' : '修改信息'}
-              </Button>
-              <Button
-                className='infoChangeCancel'
-                style={{ display: infoChange === true ? 'inline' : 'none' }}
-                onClick={() => {
-                  this.form.current.setFieldsValue({
-                    'phone_number': userData.phone_number,
-                    'description': userData.description
-                  })
-                  this.setState({ infoChange: false })
-                }}>
-                取消修改
-              </Button>
-            </div>
-          </Form.Item>
-          <Form.Item>
-            <Button
-              onClick={() => {
-                this.setState({ open: true })
-              }}>
-              修改密码
-            </Button>
-          </Form.Item>
-        </Form>
-
-
-        {/**修改信息密码验证对话框 */}
-        <Modal
-          title="身份验证"
-          okText="确认"
-          cancelText="取消"
-          onOk={this.handleOkCheck}
-          onCancel={this.handleCancelCheck}
-          destroyOnClose={true}
-          open={openCheck}>
+      <>
+        <div className='userinfo-content'>
           <Form
-            preserve={false}
-            ref={this.checkModalForm}
-          >
-            <Form.Item label="密码" name="password">
-              <Input type='password' placeholder='请输出密码'>
-              </Input>
-            </Form.Item>
-          </Form>
-        </Modal>
-
-        {/**修改密码对话框 */}
-        <Modal
-          title="修改密码"
-          okText="确认"
-          cancelText="取消"
-          onOk={this.handleOk}
-          onCancel={this.handleCancel}
-          destroyOnClose={true}
-          open={open}>
-          <Form
-            preserve={false}
-            ref={this.modalForm}
+            ref={this.form}
             labelAlign="left"
             labelCol={{ flex: '75px' }}
             wrapperCol={
               { flex: '1' }}>
-            <Form.Item label="密码" name="oldPassword"
-              rules={[
-                {
-                  required:true,
-                  message:"请输入旧密码"
-                },
-              ]}>
+
+            <Form.Item label="用户id">
+              <span>
+                {userData.id}
+              </span>
+            </Form.Item>
+            <Form.Item label="用户名">
+              <span>
+                {userData.username}
+              </span>
+            </Form.Item>
+            <Form.Item label="姓名">
+              <span>
+                {userData.name}
+              </span>
+            </Form.Item>
+            <Form.Item label="注册城市">
+              <span>
+                {userData.city}
+              </span>
+            </Form.Item>
+            <Form.Item label="手机号码" name="phone_number" initialValue={userData.phone_number}>
               <Input
-                type='password'
-                placeholder='请输入旧密码'>
+                rules={[
+                  {
+                    validator: this.validatePhoneNumber,
+                  },
+                ]}
+                disabled={!infoChange}>
               </Input>
             </Form.Item>
-            <Form.Item label="新密码" name="newPassword"
-              rules={[
-                {
-                  validator: this.validatePwd,
-                },
-              ]}>
-              <Input
-                type='password'
-                placeholder='请输入新密码'>
-              </Input>
+            <Form.Item label="个人简介" name="description" initialValue={userData.description}>
+              <TextArea
+                rules={[
+                  {
+                    required: true,
+                    message: "请输入个人简介",
+                  },
+                ]}
+                disabled={!infoChange}
+                rows={1}
+                placeholder="个人简介">
+              </TextArea>
             </Form.Item>
-            <Form.Item label="密码" name="confirmNewPassword"
-              rules={[
-                {
-                  validator: this.validatePwd,
-                },
-              ]}>
-              <Input
-                type='password'
-                placeholder='请再次输入新密码'>
-              </Input>
+            <Form.Item>
+              <div>
+                <Button
+                  onClick={() => {
+                    if (infoChange === false)
+                      this.setState({ infoChange: true })
+                    else {
+                      this.setState({ openCheck: true })
+                    }
+                  }}>
+                  {infoChange === true ? '确认修改' : '修改信息'}
+                </Button>
+                <Button
+                  className='infoChangeCancel'
+                  style={{ display: infoChange === true ? 'inline' : 'none' }}
+                  onClick={() => {
+                    this.form.current.setFieldsValue({
+                      'phone_number': userData.phone_number,
+                      'description': userData.description
+                    })
+                    this.setState({ infoChange: false })
+                  }}>
+                  取消修改
+                </Button>
+              </div>
+            </Form.Item>
+            <Form.Item>
+              <Button
+                onClick={() => {
+                  this.setState({ open: true })
+                }}>
+                修改密码
+              </Button>
             </Form.Item>
           </Form>
-        </Modal>
-      </div>
+          {/**修改信息密码验证对话框 */}
+          <Modal
+            title="身份验证"
+            okText="确认"
+            cancelText="取消"
+            onOk={this.handleOkCheck}
+            onCancel={this.handleCancelCheck}
+            destroyOnClose={true}
+            open={openCheck}>
+            <Form
+              preserve={false}
+              ref={this.checkModalForm}
+            >
+              <Form.Item label="密码" name="password">
+                <Input type='password' placeholder='请输出密码'>
+                </Input>
+              </Form.Item>
+            </Form>
+          </Modal>
+
+          {/**修改密码对话框 */}
+          <Modal
+            title="修改密码"
+            okText="确认"
+            cancelText="取消"
+            onOk={this.handleOk}
+            onCancel={this.handleCancel}
+            destroyOnClose={true}
+            open={open}>
+            <Form
+              preserve={false}
+              ref={this.modalForm}
+              labelAlign="left"
+              labelCol={{ flex: '75px' }}
+              wrapperCol={
+                { flex: '1' }}>
+              <Form.Item label="密码" name="oldPassword"
+                rules={[
+                  {
+                    required: true,
+                    message: "请输入旧密码"
+                  },
+                ]}>
+                <Input
+                  type='password'
+                  placeholder='请输入旧密码'>
+                </Input>
+              </Form.Item>
+              <Form.Item label="新密码" name="newPassword"
+                rules={[
+                  {
+                    validator: this.validatePwd,
+                  },
+                ]}>
+                <Input
+                  type='password'
+                  placeholder='请输入新密码'>
+                </Input>
+              </Form.Item>
+              <Form.Item label="密码" name="confirmNewPassword"
+                rules={[
+                  {
+                    validator: this.validatePwd,
+                  },
+                ]}>
+                <Input
+                  type='password'
+                  placeholder='请再次输入新密码'>
+                </Input>
+              </Form.Item>
+            </Form>
+          </Modal>
+        </div>
+        <div className='logout'>
+          <Button
+            onClick={()=>{
+              this.props.logout()
+            }}>
+            退出登录
+          </Button>
+        </div>
+      </>
     )
   }
 }
 
-export default connect((state) => ({ userData: state.userData }), { receiveUser })(UserInfo);
+export default connect((state) => ({ userData: state.userData }), { receiveUser, logout })(UserInfo);
